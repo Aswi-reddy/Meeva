@@ -81,9 +81,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "meevadb",
-        "USER": "mydatabaseuser",
-        "PASSWORD": "mypassword",
-        "HOST": "127.0.0.1",
+        "USER": "suma",
+        "PASSWORD": "suma@123",
+        "HOST": "10.218.186.177",
         "PORT": "3308",
     }
 }
