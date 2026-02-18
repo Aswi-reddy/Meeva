@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Meeva - Multi Vendor Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  </head>
+
+  <body class="bg-black text-white overflow-x-hidden">
+    <!-- NAVBAR -->
+    <nav
+      class="flex justify-between items-center px-12 py-6 absolute w-full z-50"
+    >
+      <h1 class="text-3xl font-bold text-purple-500">Meeva</h1>
+      <div>
+        <a href="#" class="mr-6 hover:text-purple-400">Login</a>
+        <a
+          href="#"
+          class="bg-purple-600 px-5 py-2 rounded-lg hover:bg-purple-500 transition"
+          >Become Vendor</a
+        >
+      </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section
+      class="relative min-h-screen flex items-center justify-center text-center"
+    >
+      <!-- Background Image -->
+      <img
+        src="https://images.unsplash.com/photo-1555529771-35a7b2fdb0d6"
+        class="absolute w-full h-full object-cover opacity-30"
+      />
+
+      <!-- Gradient Overlay -->
+      <div
+        class="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black"
+      ></div>
+
+      <div class="relative z-10 max-w-4xl px-6">
+        <h2
+          data-aos="fade-up"
+          class="text-6xl font-extrabold leading-tight mb-6"
+        >
+          The Future of <span class="text-purple-500">E-Commerce</span>
+        </h2>
+
+        <p
+          data-aos="fade-up"
+          data-aos-delay="200"
+          class="text-gray-300 text-lg mb-8"
+        >
+          Multi-vendor platform where businesses grow and customers discover
+          amazing products.
+        </p>
+
+        <div data-aos="zoom-in" data-aos-delay="400">
+          <button
+            class="bg-purple-600 px-8 py-4 rounded-xl text-lg hover:scale-110 transition transform mr-4"
+          >
+            Explore Products
+          </button>
+          <button
+            class="border border-purple-500 px-8 py-4 rounded-xl text-lg hover:bg-purple-500 hover:text-black transition"
+          >
+            Start Selling
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="py-24 bg-gradient-to-b from-black to-gray-900">
+      <div class="max-w-6xl mx-auto px-6">
+        <h3 class="text-4xl font-bold text-center mb-16" data-aos="fade-up">
+          Shop by Categories
+        </h3>
+
+        <div class="grid md:grid-cols-3 gap-10">
+          <div
+            data-aos="fade-right"
+            class="bg-gray-800 p-10 rounded-2xl hover:scale-105 transition"
+          >
+            <h4 class="text-xl font-bold mb-4">Electronics</h4>
+            <p class="text-gray-400">Latest gadgets & devices.</p>
+          </div>
+
+          <div
+            data-aos="fade-up"
+            class="bg-gray-800 p-10 rounded-2xl hover:scale-105 transition"
+          >
+            <h4 class="text-xl font-bold mb-4">Fashion</h4>
+            <p class="text-gray-400">Trending styles & brands.</p>
+          </div>
+
+          <div
+            data-aos="fade-left"
+            class="bg-gray-800 p-10 rounded-2xl hover:scale-105 transition"
+          >
+            <h4 class="text-xl font-bold mb-4">Home & Living</h4>
+            <p class="text-gray-400">Comfort meets style.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VENDOR CTA -->
+    <section class="py-24 bg-black text-center">
+      <h3 class="text-4xl font-bold mb-6" data-aos="fade-up">
+        Become a Vendor on Meeva
+      </h3>
+
+      <p class="text-gray-400 mb-8" data-aos="fade-up" data-aos-delay="200">
+        Sell your products to thousands of customers across the platform.
+      </p>
+
+      <button
+        data-aos="zoom-in"
+        data-aos-delay="400"
+        class="bg-purple-600 px-10 py-4 rounded-xl text-lg hover:scale-110 transition"
+      >
+        Register as Vendor
+      </button>
+    </section>
+
+    <script>
+      AOS.init({ duration: 1000 });
+    </script>
+  </body>
+</html>
