@@ -17,7 +17,7 @@
       <div>
         <a href="#" class="mr-6 hover:text-purple-400">Login</a>
         <a
-          href="#"
+          href="{% url 'vendor_register' %}"
           class="bg-purple-600 px-5 py-2 rounded-lg hover:bg-purple-500 transition"
           >Become Vendor</a
         >
@@ -120,6 +120,7 @@
         data-aos="zoom-in"
         data-aos-delay="400"
         class="bg-purple-600 px-10 py-4 rounded-xl text-lg hover:scale-110 transition"
+        onclick="window.location.href='{% url 'vendor_register' %}'"
       >
         Register as Vendor
       </button>

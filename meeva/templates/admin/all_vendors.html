@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Vendors - Meeva Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #e9d5ff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a1a3a 100%);
+            border-bottom: 2px solid rgba(147, 51, 234, 0.3);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.15);
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .navbar .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn, .logout-btn {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 40px auto;
+            padding: 0 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .filter-tab {
+            padding: 12px 22px;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 8px;
+            text-decoration: none;
+            color: #a78bfa;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: rgba(17, 17, 17, 0.5);
+        }
+
+        .filter-tab:hover {
+            border-color: #9333ea;
+            color: #c084fc;
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            border-color: #9333ea;
+        }
+
+        .messages {
+            margin-bottom: 25px;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border-color: #10b981;
+        }
+
+        .vendors-table {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+        }
+
+        th {
+            padding: 18px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(147, 51, 234, 0.1);
+            font-size: 14px;
+            color: #c084fc;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(147, 51, 234, 0.1);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-approved {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-rejected {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-suspended {
+            background-color: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .view-btn:hover {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #a78bfa;
+        }
+
+        .empty-state-icon {
+            font-size: 72px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 20px rgba(147, 51, 234, 0.3));
+        }
+
+        .empty-state h3 {
+            font-size: 26px;
+            margin-bottom: 12px;
+            color: #c084fc;
+        }
+
+        @media (max-width: 768px) {
+            .filter-tabs {
+                flex-wrap: wrap;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🛒 MEEVA Admin - All Vendors</h1>
+        <div class="admin-info">
+            <a href="{% url 'admin_dashboard' %}" class="back-btn">← Back to Dashboard</a>
+            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="page-header">
+            <h2 class="page-title">👥 All Vendors</h2>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <a href="?status=all" class="filter-tab {% if status_filter == 'all' %}active{% endif %}">All Vendors</a>
+            <a href="?status=pending" class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+            <a href="?status=approved" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
+            <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">Rejected</a>
+            <a href="?status=suspended" class="filter-tab {% if status_filter == 'suspended' %}active{% endif %}">Suspended</a>
+        </div>
+
+        <div class="vendors-table">
+            {% if vendors %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Business Name</th>
+                            <th>Contact Person</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Joined Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vendor in vendors %}
+                        <tr>
+                            <td>#{{ vendor.id }}</td>
+                            <td><strong>{{ vendor.business_name }}</strong></td>
+                            <td>{{ vendor.full_name }}</td>
+                            <td>{{ vendor.email }}</td>
+                            <td>{{ vendor.phone }}</td>
+                            <td>{{ vendor.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="status-badge status-{{ vendor.status }}">
+                                    {{ vendor.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'vendor_detail' vendor.id %}" class="view-btn">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <h3>No Vendors Found</h3>
+                    <p>No vendors match the selected filter.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

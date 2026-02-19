@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meeva Admin Login</title>
+    <title>Vendor Login - Meeva</title>
     <style>
         * {
             margin: 0;
@@ -46,7 +46,7 @@
 
         .login-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             background: rgba(26, 26, 26, 0.95);
             backdrop-filter: blur(10px);
             padding: 50px;
@@ -79,6 +79,52 @@
             margin-top: 5px;
             letter-spacing: 1px;
             font-weight: 500;
+        }
+
+        .info-box {
+            background-color: rgba(147, 51, 234, 0.1);
+            border-left: 4px solid #9333ea;
+            padding: 16px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #c084fc;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #e9d5ff;
+        }
+
+        .messages {
+            margin-bottom: 25px;
+        }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border-left: 4px solid;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            border-color: #10b981;
+        }
+
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border-color: #ef4444;
+        }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #fcd34d;
+            border-color: #f59e0b;
         }
 
         .form-group {
@@ -143,51 +189,22 @@
             transform: translateY(0);
         }
 
-        .messages {
-            margin-bottom: 25px;
-        }
-
-        .alert {
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            border-left: 4px solid;
-            backdrop-filter: blur(10px);
-        }
-
-        .alert-success {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #6ee7b7;
-            border-color: #10b981;
-        }
-
-        .alert-error {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border-color: #ef4444;
-        }
-
-        .alert-warning {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: #fcd34d;
-            border-color: #f59e0b;
-        }
-
-        .divider {
+        .register-link {
             text-align: center;
-            margin: 30px 0;
-            position: relative;
+            margin-top: 25px;
+            color: #a78bfa;
+            font-size: 14px;
         }
 
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(147, 51, 234, 0.3), transparent);
+        .register-link a {
+            color: #c084fc;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .register-link a:hover {
+            color: #e9d5ff;
         }
 
         @media (max-width: 500px) {
@@ -200,13 +217,17 @@
 </head>
 <body>
     <div class="login-container">
-        <!-- Logo Section -->
         <div class="logo">
-            <h1>MEEVA</h1>
-            <p>Admin Control Panel</p>
+            <h1>🛒 MEEVA</h1>
+            <p>Vendor Login Portal</p>
         </div>
 
-        <!-- Messages -->
+        <div class="info-box">
+            <strong>ℹ️ Login Instructions:</strong><br>
+            Use the <strong>email</strong> and <strong>password</strong> you used during registration.<br>
+            Your account must be approved by admin first.
+        </div>
+
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
@@ -217,36 +238,25 @@
             </div>
         {% endif %}
 
-        <!-- Login Form -->
-        <form method="POST" class="login-form">
+        <form method="POST">
             {% csrf_token %}
 
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    required 
-                    placeholder="Enter your email"
-                >
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    placeholder="Enter your password"
-                >
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
             </div>
 
-            <button type="submit" class="login-btn">Sign In to Dashboard</button>
-        </form>
+            <button type="submit" class="login-btn">Sign In</button>
 
-        
+            <div class="register-link">
+                Not registered? <a href="{% url 'vendor_register' %}">Become a Vendor</a>
+            </div>
+        </form>
     </div>
 </body>
 </html>

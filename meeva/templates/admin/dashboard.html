@@ -13,22 +13,31 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #e9d5ff;
+            min-height: 100vh;
         }
 
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a1a3a 100%);
+            border-bottom: 2px solid rgba(147, 51, 234, 0.3);
             color: white;
-            padding: 15px 30px;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.15);
+            backdrop-filter: blur(10px);
         }
 
         .navbar h1 {
-            font-size: 24px;
+            font-size: 26px;
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            letter-spacing: 1px;
         }
 
         .navbar .admin-info {
@@ -39,181 +48,216 @@
 
         .admin-info span {
             font-size: 14px;
+            color: #c084fc;
+            font-weight: 500;
         }
 
         .logout-btn {
-            background-color: rgba(255, 255, 255, 0.2);
-            border: 1px solid white;
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border: 1px solid rgba(147, 51, 234, 0.5);
             color: white;
-            padding: 8px 16px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
 
         .logout-btn:hover {
-            background-color: rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
         }
 
         .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 30px;
         }
 
         .messages {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .alert {
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 10px;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            backdrop-filter: blur(10px);
         }
 
         .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border-color: #10b981;
         }
 
         .dashboard-title {
-            font-size: 28px;
-            margin-bottom: 30px;
-            color: #333;
+            font-size: 32px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(147, 51, 234, 0.3);
+            border-color: rgba(147, 51, 234, 0.6);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card.pending::before {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .stat-card.approved::before {
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+        }
+
+        .stat-card.rejected::before {
+            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .stat-card.suspended::before {
+            background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+        }
+
+        .stat-card.total::before {
+            background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%);
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #a855f7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+            box-shadow: 0 2px 10px rgba(147, 51, 234, 0.3);
         }
 
         .dashboard-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
             margin-bottom: 40px;
         }
 
         .card {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #9333ea 0%, #c084fc 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 50px rgba(147, 51, 234, 0.3);
+            border-color: rgba(147, 51, 234, 0.6);
         }
 
         .card-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
+            font-size: 48px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.3));
         }
 
         .card-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 10px;
-            color: #667eea;
+            margin-bottom: 12px;
+            color: #c084fc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .card-description {
             font-size: 14px;
-            color: #666;
-            margin-bottom: 15px;
-        }
-
-        .card-button {
-            display: inline-block;
-            background-color: #667eea;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .card-button:hover {
-            background-color: #764ba2;
-        }
-
-        .section {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .section-title {
-            font-size: 22px;
+            color: #a78bfa;
             margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .info-item {
-            background-color: #f5f7fa;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
-        }
-
-        .info-label {
-            font-size: 12px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .info-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-top: 5px;
-        }
-
-        .coming-soon {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            font-size: 16px;
-        }
-
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-            color: #666;
-        }
-
-        .feature-list li:before {
-            content: "✓ ";
-            color: #667eea;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .feature-list li:last-child {
-            border-bottom: none;
+            line-height: 1.6;
         }
 
         @media (max-width: 768px) {
             .navbar {
                 flex-direction: column;
                 gap: 15px;
+                padding: 20px;
             }
 
             .admin-info {
@@ -221,8 +265,13 @@
                 justify-content: space-between;
             }
 
+            .stats-grid,
             .dashboard-cards {
                 grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 20px;
             }
         }
     </style>
@@ -253,119 +302,68 @@
         <!-- Welcome Section -->
         <h2 class="dashboard-title">Welcome to Meeva Admin Panel</h2>
 
-        <!-- Quick Stats Cards -->
+        <!-- Vendor Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card pending">
+                <div class="stat-number">{{ pending_count }}</div>
+                <div class="stat-label">Pending Vendors</div>
+            </div>
+            <div class="stat-card approved">
+                <div class="stat-number">{{ approved_count }}</div>
+                <div class="stat-label">Approved Vendors</div>
+            </div>
+            <div class="stat-card rejected">
+                <div class="stat-number">{{ rejected_count }}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card suspended">
+                <div class="stat-number">{{ suspended_count }}</div>
+                <div class="stat-label">Suspended</div>
+            </div>
+            <div class="stat-card total">
+                <div class="stat-number">{{ total_vendors }}</div>
+                <div class="stat-label">Total Vendors</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
         <div class="dashboard-cards">
-            <div class="card">
+            <a href="{% url 'pending_vendors' %}" class="card">
+                <div class="card-icon">📋</div>
+                <div class="card-title">
+                    Pending Applications
+                    {% if pending_count > 0 %}
+                        <span class="badge">{{ pending_count }}</span>
+                    {% endif %}
+                </div>
+                <div class="card-description">
+                    Review and approve new vendor registration requests
+                </div>
+            </a>
+
+            <a href="{% url 'all_vendors' %}" class="card">
                 <div class="card-icon">👥</div>
-                <div class="card-title">Vendor Management</div>
+                <div class="card-title">All Vendors</div>
                 <div class="card-description">
-                    Approve vendor registrations, view documents (Bank details, Aadhar, PAN, License)
+                    View, manage, suspend or activate vendors
                 </div>
-                <a href="#vendors" class="card-button">Manage Vendors</a>
-            </div>
+            </a>
 
-            <div class="card">
-                <div class="card-icon">📦</div>
-                <div class="card-title">Orders</div>
+            <a href="{% url 'all_vendors' %}?status=approved" class="card">
+                <div class="card-icon">✅</div>
+                <div class="card-title">Active Vendors</div>
                 <div class="card-description">
-                    Monitor all orders placed on Meeva platform across vendors
+                    {{ approved_count }} vendors actively selling on platform
                 </div>
-                <a href="#orders" class="card-button">View Orders</a>
-            </div>
+            </a>
 
-            <div class="card">
-                <div class="card-icon">💰</div>
-                <div class="card-title">Revenue</div>
+            <a href="{% url 'all_vendors' %}?status=suspended" class="card">
+                <div class="card-icon">🚫</div>
+                <div class="card-title">Suspended Vendors</div>
                 <div class="card-description">
-                    Track 15% platform fee collection from all vendor sales
+                    Manage suspended vendor accounts
                 </div>
-                <a href="#revenue" class="card-button">Revenue Report</a>
-            </div>
-
-            <div class="card">
-                <div class="card-icon">⚙️</div>
-                <div class="card-title">Settings</div>
-                <div class="card-description">
-                    Configure platform settings, fees, and policies
-                </div>
-                <a href="#settings" class="card-button">Settings</a>
-            </div>
-        </div>
-
-        <!-- Vendor Management Section -->
-        <div class="section" id="vendors">
-            <h3 class="section-title">👥 Vendor Management</h3>
-            <p class="coming-soon">
-                📝 <strong>Features Coming Soon:</strong>
-            </p>
-            <ul class="feature-list">
-                <li>View pending vendor registration requests</li>
-                <li>Verify vendor documents (Bank details, Aadhar, PAN, License)</li>
-                <li>Approve or reject vendor applications</li>
-                <li>View approved vendors list</li>
-                <li>Remove vendors from platform</li>
-                <li>Send email notifications to vendors on approval/rejection</li>
-            </ul>
-        </div>
-
-        <!-- Orders Section -->
-        <div class="section" id="orders">
-            <h3 class="section-title">📦 Orders Overview</h3>
-            <p class="coming-soon">
-                📝 <strong>Features Coming Soon:</strong>
-            </p>
-            <ul class="feature-list">
-                <li>View all orders from all vendors</li>
-                <li>Filter by order status (Placed, Packing, Travel, Delivered)</li>
-                <li>View return/exchange requests</li>
-                <li>Process refunds for returned items</li>
-                <li>Generate order reports</li>
-                <li>Track delivery timelines</li>
-            </ul>
-        </div>
-
-        <!-- Revenue Section -->
-        <div class="section" id="revenue">
-            <h3 class="section-title">💰 Revenue & Platform Fees</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Platform Fee Rate</div>
-                    <div class="info-value">15%</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Total Revenue (This Month)</div>
-                    <div class="info-value">₹0</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Total Orders</div>
-                    <div class="info-value">0</div>
-                </div>
-            </div>
-            <p class="coming-soon" style="margin-top: 20px;">
-                📝 <strong>Features Coming Soon:</strong>
-            </p>
-            <ul class="feature-list">
-                <li>View daily/monthly revenue reports</li>
-                <li>Export revenue data</li>
-                <li>Track platform fees collected</li>
-                <li>Manage payment settlements</li>
-            </ul>
-        </div>
-
-        <!-- Settings Section -->
-        <div class="section" id="settings">
-            <h3 class="section-title">⚙️ Platform Settings</h3>
-            <p class="coming-soon">
-                📝 <strong>Features Coming Soon:</strong>
-            </p>
-            <ul class="feature-list">
-                <li>Adjust platform fee percentage</li>
-                <li>Configure return/exchange policies</li>
-                <li>Set delivery timelines</li>
-                <li>Manage email notifications</li>
-                <li>View system logs</li>
-                <li>Backup database</li>
-            </ul>
+            </a>
         </div>
     </div>
 </body>
