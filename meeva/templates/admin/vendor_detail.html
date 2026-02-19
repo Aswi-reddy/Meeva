@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Details - {{ vendor.business_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: #e9d5ff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a1a3a 100%);
+            border-bottom: 2px solid rgba(147, 51, 234, 0.3);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.15);
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .navbar .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn, .logout-btn {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border: 1px solid rgba(147, 51, 234, 0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover, .logout-btn:hover {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 30px;
+        }
+
+        .messages {
+            margin-bottom: 25px;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border-color: #10b981;
+        }
+
+        .vendor-header {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vendor-title h2 {
+            font-size: 30px;
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .vendor-title p {
+            color: #a78bfa;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 10px 22px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .status-approved {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .status-rejected {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .status-suspended {
+            background-color: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
+            border: 1px solid rgba(107, 114, 128, 0.4);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .info-card h3 {
+            font-size: 18px;
+            background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(147, 51, 234, 0.2);
+        }
+
+        .info-row {
+            margin-bottom: 18px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #e9d5ff;
+            font-weight: 500;
+        }
+
+        .documents-section {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .documents-section h3 {
+            font-size: 20px;
+            background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .document-item {
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: rgba(17, 17, 17, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .document-item:hover {
+            border-color: #9333ea;
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .document-item h4 {
+            font-size: 14px;
+            color: #c084fc;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .document-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .document-image:hover {
+            transform: scale(1.05);
+        }
+
+        .view-doc-btn {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .view-doc-btn:hover {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            box-shadow: 0 5px 15px rgba(147, 51, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .actions-section {
+            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .actions-section h3 {
+            font-size: 20px;
+            background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 25px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+            transition: all 0.3s;
+        }
+
+        .approve-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .approve-btn:hover {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .reject-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .reject-btn:hover {
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .suspend-btn {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+        }
+
+        .suspend-btn:hover {
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(107, 114, 128, 0.4);
+        }
+
+        .activate-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .activate-btn:hover {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .rejection-form {
+            margin-top: 25px;
+            padding: 25px;
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .rejection-form.show {
+            display: block;
+        }
+
+        .rejection-form label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: bold;
+            color: #fca5a5;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rejection-form textarea {
+            width: 100%;
+            padding: 14px;
+            background: rgba(17, 17, 17, 0.8);
+            border: 1.5px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            min-height: 120px;
+            font-family: inherit;
+            color: #e9d5ff;
+            font-size: 14px;
+        }
+
+        .rejection-form textarea:focus {
+            outline: none;
+            border-color: #ef4444;
+            background: rgba(17, 17, 17, 1);
+        }
+
+        .rejection-form button {
+            margin-top: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            margin-top: 50px;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(147, 51, 234, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: #c084fc;
+            font-size: 45px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: #e9d5ff;
+        }
+
+        .approval-info {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 18px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            color: #6ee7b7;
+        }
+
+        .approval-info strong {
+            color: #a7f3d0;
+        }
+
+        .rejection-info {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 18px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            color: #fca5a5;
+        }
+
+        .rejection-info strong {
+            color: #fecaca;
+        }
+
+        @media (max-width: 768px) {
+            .vendor-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1> MEEVA Admin - Vendor Details</h1>
+        <div class="admin-info">
+            <a href="{% url 'all_vendors' %}" class="back-btn">← Back to Vendors</a>
+            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Vendor Header -->
+        <div class="vendor-header">
+            <div class="vendor-title">
+                <h2>{{ vendor.business_name }}</h2>
+                <p>Vendor ID: #{{ vendor.id }} | Registered: {{ vendor.created_at|date:"F d, Y" }}</p>
+            </div>
+            <span class="status-badge status-{{ vendor.status }}">{{ vendor.get_status_display }}</span>
+        </div>
+
+        <!-- Approval/Rejection Info -->
+        {% if vendor.status == 'approved' %}
+            <div class="approval-info">
+                <strong>Approved by:</strong> {{ vendor.approved_by }} on {{ vendor.approved_at|date:"F d, Y H:i" }}
+            </div>
+        {% elif vendor.status == 'rejected' %}
+            <div class="rejection-info">
+                <strong>Rejection Reason:</strong> {{ vendor.rejection_reason }}
+            </div>
+        {% endif %}
+
+        <!-- Vendor Information -->
+        <div class="info-grid">
+            <!-- Personal Information -->
+            <div class="info-card">
+                <h3>👤 Personal Information</h3>
+                <div class="info-row">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value">{{ vendor.full_name }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">{{ vendor.email }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Phone</div>
+                    <div class="info-value">{{ vendor.phone }}</div>
+                </div>
+            </div>
+
+            <!-- Business Information -->
+            <div class="info-card">
+                <h3>Business Information</h3>
+                <div class="info-row">
+                    <div class="info-label">Business Name</div>
+                    <div class="info-value">{{ vendor.business_name }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Business Address</div>
+                    <div class="info-value">{{ vendor.business_address }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">License Number</div>
+                    <div class="info-value">{{ vendor.license_number }}</div>
+                </div>
+                {% if vendor.business_description %}
+                <div class="info-row">
+                    <div class="info-label">Description</div>
+                    <div class="info-value">{{ vendor.business_description }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- KYC Information -->
+            <div class="info-card">
+                <h3>📄 KYC Documents</h3>
+                <div class="info-row">
+                    <div class="info-label">Aadhar Number</div>
+                    <div class="info-value">{{ vendor.aadhar_number }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">PAN Number</div>
+                    <div class="info-value">{{ vendor.pan_number }}</div>
+                </div>
+            </div>
+
+            <!-- Bank Details -->
+            <div class="info-card">
+                <h3>🏦 Bank Details</h3>
+                <div class="info-row">
+                    <div class="info-label">Bank Name</div>
+                    <div class="info-value">{{ vendor.bank_name }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Account Number</div>
+                    <div class="info-value">{{ vendor.account_number }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">IFSC Code</div>
+                    <div class="info-value">{{ vendor.ifsc_code }}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Account Holder</div>
+                    <div class="info-value">{{ vendor.account_holder_name }}</div>
+                </div>
+            </div>
+
+            <!-- Platform Settings -->
+            <div class="info-card">
+                <h3>⚙️ Platform Settings</h3>
+                <div class="info-row">
+                    <div class="info-label">Platform Fee</div>
+                    <div class="info-value">{{ vendor.platform_fee_percentage }}%</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Account Status</div>
+                    <div class="info-value">{% if vendor.is_active %}Active{% else %}Inactive{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Images -->
+        <div class="documents-section">
+            <h3> Uploaded Documents</h3>
+            <div class="documents-grid">
+                <div class="document-item">
+                    <h4>Aadhar Card</h4>
+                    {% if vendor.aadhar_image %}
+                        <img src="{{ vendor.aadhar_image.url }}" alt="Aadhar Card" class="document-image" onclick="openModal('{{ vendor.aadhar_image.url }}')">
+                        <a href="{{ vendor.aadhar_image.url }}" target="_blank" class="view-doc-btn">View Full Size</a>
+                    {% else %}
+                        <p style="color: #999;">No document uploaded</p>
+                    {% endif %}
+                </div>
+
+                <div class="document-item">
+                    <h4>PAN Card</h4>
+                    {% if vendor.pan_image %}
+                        <img src="{{ vendor.pan_image.url }}" alt="PAN Card" class="document-image" onclick="openModal('{{ vendor.pan_image.url }}')">
+                        <a href="{{ vendor.pan_image.url }}" target="_blank" class="view-doc-btn">View Full Size</a>
+                    {% else %}
+                        <p style="color: #999;">No document uploaded</p>
+                    {% endif %}
+                </div>
+
+                <div class="document-item">
+                    <h4>Business License</h4>
+                    {% if vendor.license_image %}
+                        <img src="{{ vendor.license_image.url }}" alt="Business License" class="document-image" onclick="openModal('{{ vendor.license_image.url }}')">
+                        <a href="{{ vendor.license_image.url }}" target="_blank" class="view-doc-btn">View Full Size</a>
+                    {% else %}
+                        <p style="color: #999;">No document uploaded</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Actions -->
+        <div class="actions-section">
+            <h3> Admin Actions</h3>
+            <div class="action-buttons">
+                {% if vendor.status == 'pending' %}
+                    <form method="POST" action="{% url 'approve_vendor' vendor.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn approve-btn" onclick="return confirm('Are you sure you want to approve this vendor?')">
+                            Approve Vendor
+                        </button>
+                    </form>
+                    <button type="button" class="action-btn reject-btn" onclick="toggleRejectForm()">
+                        ❌ Reject Vendor
+                    </button>
+                {% elif vendor.status == 'approved' %}
+                    <form method="POST" action="{% url 'suspend_vendor' vendor.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn suspend-btn" onclick="return confirm('Are you sure you want to suspend this vendor?')">
+                            🚫 Suspend Vendor
+                        </button>
+                    </form>
+                {% elif vendor.status == 'suspended' %}
+                    <form method="POST" action="{% url 'activate_vendor' vendor.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn activate-btn" onclick="return confirm('Are you sure you want to reactivate this vendor?')">
+                            ✅ Activate Vendor
+                        </button>
+                    </form>
+                {% elif vendor.status == 'rejected' %}
+                    <form method="POST" action="{% url 'approve_vendor' vendor.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn approve-btn" onclick="return confirm('Are you sure you want to approve this previously rejected vendor?')">
+                            ✅ Approve Vendor
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <!-- Rejection Form -->
+            <div id="rejectionForm" class="rejection-form">
+                <form method="POST" action="{% url 'reject_vendor' vendor.id %}">
+                    {% csrf_token %}
+                    <label for="rejection_reason">Reason for Rejection:</label>
+                    <textarea id="rejection_reason" name="rejection_reason" required placeholder="Enter the reason for rejecting this vendor application..."></textarea>
+                    <button type="submit" class="action-btn reject-btn">Submit Rejection</button>
+                    <button type="button" class="action-btn" style="background-color: #6c757d;" onclick="toggleRejectForm()">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script>
+        function toggleRejectForm() {
+            const form = document.getElementById('rejectionForm');
+            form.classList.toggle('show');
+        }
+
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

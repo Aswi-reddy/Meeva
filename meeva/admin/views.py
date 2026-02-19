@@ -1,16 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
-# Get admin credentials from .env
-ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@meeva.com')
-ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'Admin@123456')
+from django.contrib.auth.hashers import check_password
+from django.utils import timezone
+from .models import Admin
+from vendor.models import Vendor
+from vendor.emails import (
+    send_vendor_approval_email,
+    send_vendor_rejection_email,
+    send_vendor_suspension_email,
+    send_vendor_reactivation_email
+)
 
 
 @csrf_protect
@@ -20,31 +21,45 @@ def admin_login(request):
         email = request.POST.get('email', '').strip()
         password = request.POST.get('password', '').strip()
         
-        # Validate credentials against .env
-        if email == ADMIN_EMAIL and password == ADMIN_PASSWORD:
-            # Set session to mark admin as logged in
-            request.session['admin_logged_in'] = True
-            request.session['admin_email'] = email
-            messages.success(request, 'Welcome to Meeva Admin Dashboard!')
-            return redirect('admin_dashboard')
-        else:
+        # Validate credentials against database
+        try:
+            admin = Admin.objects.get(email=email, is_active=True)
+            if check_password(password, admin.password):
+                # Set session to mark admin as logged in
+                request.session['admin_logged_in'] = True
+                request.session['admin_email'] = email
+                request.session['admin_id'] = admin.id
+                messages.success(request, 'Welcome to Meeva Admin Dashboard!')
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'Invalid email or password. Please try again.')
+        except Admin.DoesNotExist:
             messages.error(request, 'Invalid email or password. Please try again.')
     
     return render(request, 'admin/login.html')
 
 
 def admin_dashboard(request):
-    """
-    Admin dashboard - shows admin panel
-    Requires admin to be logged in via session
-    """
+    
     # Check if admin is logged in
     if not request.session.get('admin_logged_in'):
         messages.warning(request, 'Please login first.')
         return redirect('admin_login')
     
+    # Get vendor statistics
+    pending_count = Vendor.objects.filter(status='pending').count()
+    approved_count = Vendor.objects.filter(status='approved').count()
+    rejected_count = Vendor.objects.filter(status='rejected').count()
+    suspended_count = Vendor.objects.filter(status='suspended').count()
+    total_vendors = Vendor.objects.count()
+    
     context = {
         'admin_email': request.session.get('admin_email', 'Admin'),
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'suspended_count': suspended_count,
+        'total_vendors': total_vendors,
     }
     
     return render(request, 'admin/dashboard.html', context)
@@ -57,3 +72,162 @@ def admin_logout(request):
     request.session.flush()
     messages.success(request, 'Successfully logged out.')
     return redirect('admin_login')
+
+
+# ============ VENDOR MANAGEMENT VIEWS ============
+
+def pending_vendors(request):
+    """List all pending vendor applications"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    vendors = Vendor.objects.filter(status='pending').order_by('-created_at')
+    
+    context = {
+        'admin_email': request.session.get('admin_email'),
+        'vendors': vendors,
+        'page_title': 'Pending Vendor Applications',
+    }
+    
+    return render(request, 'admin/pending_vendors.html', context)
+
+
+def all_vendors(request):
+    """List all vendors with filtering"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    # Get filter parameter
+    status_filter = request.GET.get('status', 'all')
+    
+    if status_filter == 'all':
+        vendors = Vendor.objects.all().order_by('-created_at')
+    else:
+        vendors = Vendor.objects.filter(status=status_filter).order_by('-created_at')
+    
+    context = {
+        'admin_email': request.session.get('admin_email'),
+        'vendors': vendors,
+        'status_filter': status_filter,
+        'page_title': 'All Vendors',
+    }
+    
+    return render(request, 'admin/all_vendors.html', context)
+
+
+def vendor_detail(request, vendor_id):
+    """View detailed information about a vendor including documents"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+    
+    context = {
+        'admin_email': request.session.get('admin_email'),
+        'vendor': vendor,
+    }
+    
+    return render(request, 'admin/vendor_detail.html', context)
+
+
+@require_http_methods(["POST"])
+def approve_vendor(request, vendor_id):
+    """Approve a vendor application"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+    admin_email = request.session.get('admin_email')
+    
+    vendor.status = 'approved'
+    vendor.approved_by = admin_email
+    vendor.approved_at = timezone.now()
+    vendor.rejection_reason = None
+    vendor.save()
+    
+    # Send approval email to vendor
+    email_sent = send_vendor_approval_email(vendor, admin_email)
+    
+    if email_sent:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been approved successfully! Confirmation email sent to vendor.')
+    else:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been approved successfully! (Email notification failed)')
+    
+    return redirect('vendor_detail', vendor_id=vendor_id)
+
+
+@require_http_methods(["POST"])
+def reject_vendor(request, vendor_id):
+    """Reject a vendor application"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+    rejection_reason = request.POST.get('rejection_reason', 'No reason provided')
+    
+    vendor.status = 'rejected'
+    vendor.rejection_reason = rejection_reason
+    vendor.save()
+    
+    # Send rejection email to vendor
+    email_sent = send_vendor_rejection_email(vendor, rejection_reason)
+    
+    if email_sent:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been rejected. Notification email sent to vendor.')
+    else:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been rejected. (Email notification failed)')
+    
+    return redirect('vendor_detail', vendor_id=vendor_id)
+
+
+@require_http_methods(["POST"])
+def suspend_vendor(request, vendor_id):
+    """Suspend an approved vendor"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+    
+    vendor.status = 'suspended'
+    vendor.is_active = False
+    vendor.save()
+    
+    # Send suspension email to vendor
+    email_sent = send_vendor_suspension_email(vendor)
+    
+    if email_sent:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been suspended. Notification email sent to vendor.')
+    else:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been suspended. (Email notification failed)')
+    
+    return redirect('vendor_detail', vendor_id=vendor_id)
+
+
+@require_http_methods(["POST"])
+def activate_vendor(request, vendor_id):
+    """Activate a suspended vendor"""
+    if not request.session.get('admin_logged_in'):
+        messages.warning(request, 'Please login first.')
+        return redirect('admin_login')
+    
+    vendor = get_object_or_404(Vendor, id=vendor_id)
+    
+    vendor.status = 'approved'
+    vendor.is_active = True
+    vendor.save()
+    
+    # Send reactivation email to vendor
+    email_sent = send_vendor_reactivation_email(vendor)
+    
+    if email_sent:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been activated. Confirmation email sent to vendor.')
+    else:
+        messages.success(request, f'Vendor "{vendor.business_name}" has been activated. (Email notification failed)')
+    
+    return redirect('vendor_detail', vendor_id=vendor_id)
