@@ -4,365 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meeva Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            color: #e9d5ff;
-            min-height: 100vh;
-        }
-
-        .navbar {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a1a3a 100%);
-            border-bottom: 2px solid rgba(147, 51, 234, 0.3);
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 20px rgba(147, 51, 234, 0.15);
-            backdrop-filter: blur(10px);
-        }
-
-        .navbar h1 {
-            font-size: 26px;
-            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .navbar .admin-info {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .admin-info span {
-            font-size: 14px;
-            color: #c084fc;
-            font-weight: 500;
-        }
-
-        .logout-btn {
-            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-            border: 1px solid rgba(147, 51, 234, 0.5);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .logout-btn:hover {
-            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
-            transform: translateY(-2px);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 30px;
-        }
-
-        .messages {
-            margin-bottom: 25px;
-        }
-
-        .alert {
-            padding: 16px 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid;
-            backdrop-filter: blur(10px);
-        }
-
-        .alert-success {
-            background-color: rgba(16, 185, 129, 0.15);
-            color: #6ee7b7;
-            border-color: #10b981;
-        }
-
-        .dashboard-title {
-            font-size: 32px;
-            margin-bottom: 40px;
-            background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: bold;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(147, 51, 234, 0.3);
-            border-color: rgba(147, 51, 234, 0.6);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-        }
-
-        .stat-card.pending::before {
-            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
-        }
-
-        .stat-card.approved::before {
-            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
-        }
-
-        .stat-card.rejected::before {
-            background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .stat-card.suspended::before {
-            background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
-        }
-
-        .stat-card.total::before {
-            background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%);
-        }
-
-        .stat-number {
-            font-size: 42px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: #a855f7;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        .badge {
-            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 10px;
-            box-shadow: 0 2px 10px rgba(147, 51, 234, 0.3);
-        }
-
-        .dashboard-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(42, 26, 58, 0.7) 100%);
-            padding: 35px;
-            border-radius: 15px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(147, 51, 234, 0.3);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #9333ea 0%, #c084fc 100%);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 50px rgba(147, 51, 234, 0.3);
-            border-color: rgba(147, 51, 234, 0.6);
-        }
-
-        .card-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.3));
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: #c084fc;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .card-description {
-            font-size: 14px;
-            color: #a78bfa;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-                padding: 20px;
-            }
-
-            .admin-info {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .stats-grid,
-            .dashboard-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .container {
-                padding: 0 20px;
-            }
-        }
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
     </style>
 </head>
-<body>
+<body class="bg-[#0a0a0a] min-h-screen text-white">
     <!-- Navbar -->
-    <nav class="navbar">
-        <h1>🛒 MEEVA Admin Dashboard</h1>
-        <div class="admin-info">
-            <span>👤 {{ admin_email }}</span>
-            <a href="{% url 'admin_logout' %}" class="logout-btn">Logout</a>
+    <nav class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white"><i class="fas fa-shield-alt mr-2"></i>MEEVA Admin Dashboard</h1>
+        <div class="flex items-center gap-6">
+            <span class="text-[#888] font-semibold"><i class="fas fa-user mr-2"></i>{{ admin_email }}</span>
+            <a href="{% url 'admin_logout' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">Logout</a>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <div class="container">
+    <div class="max-w-6xl mx-auto px-6 py-8 fade-up">
         <!-- Messages -->
         {% if messages %}
-            <div class="messages">
+            <div class="mb-6 space-y-3">
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
+                    <div class="p-4 bg-[#141414] border border-[#222] text-[#ccc] font-medium">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        <!-- Welcome Section -->
-        <h2 class="dashboard-title">Welcome to Meeva Admin Panel</h2>
+        <h2 class="text-3xl font-bold text-white mb-8">Welcome to Admin Panel</h2>
 
-        <!-- Vendor Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card pending">
-                <div class="stat-number">{{ pending_count }}</div>
-                <div class="stat-label">Pending Vendors</div>
+        <!-- Statistics Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <div class="text-3xl font-bold text-white">{{ pending_count }}</div>
+                <div class="text-sm text-[#888] uppercase tracking-wide mt-2 font-semibold">Pending Vendors</div>
             </div>
-            <div class="stat-card approved">
-                <div class="stat-number">{{ approved_count }}</div>
-                <div class="stat-label">Approved Vendors</div>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <div class="text-3xl font-bold text-white">{{ approved_count }}</div>
+                <div class="text-sm text-[#888] uppercase tracking-wide mt-2 font-semibold">Approved Vendors</div>
             </div>
-            <div class="stat-card rejected">
-                <div class="stat-number">{{ rejected_count }}</div>
-                <div class="stat-label">Rejected</div>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <div class="text-3xl font-bold text-white">{{ rejected_count }}</div>
+                <div class="text-sm text-[#888] uppercase tracking-wide mt-2 font-semibold">Rejected</div>
             </div>
-            <div class="stat-card suspended">
-                <div class="stat-number">{{ suspended_count }}</div>
-                <div class="stat-label">Suspended</div>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <div class="text-3xl font-bold text-white">{{ suspended_count }}</div>
+                <div class="text-sm text-[#888] uppercase tracking-wide mt-2 font-semibold">Suspended</div>
             </div>
-            <div class="stat-card total">
-                <div class="stat-number">{{ total_vendors }}</div>
-                <div class="stat-label">Total Vendors</div>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <div class="text-3xl font-bold text-white">{{ total_vendors }}</div>
+                <div class="text-sm text-[#888] uppercase tracking-wide mt-2 font-semibold">Total Vendors</div>
             </div>
         </div>
 
         <!-- Quick Actions -->
-        <div class="dashboard-cards">
-            <a href="{% url 'pending_vendors' %}" class="card">
-                <div class="card-icon">📋</div>
-                <div class="card-title">
+        <h3 class="text-xl font-bold text-white mb-6">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a href="{% url 'pending_vendors' %}" class="bg-[#141414] border border-[#222] p-6 hover:border-[#444] transition">
+                <div class="text-4xl mb-4"><i class="fas fa-hourglass-half text-[#555]"></i></div>
+                <h4 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                     Pending Applications
                     {% if pending_count > 0 %}
-                        <span class="badge">{{ pending_count }}</span>
+                        <span class="bg-[#1a1a1a] text-white text-xs px-2 py-1 border border-[#222] font-bold">{{ pending_count }}</span>
                     {% endif %}
-                </div>
-                <div class="card-description">
-                    Review and approve new vendor registration requests
-                </div>
+                </h4>
+                <p class="text-[#888] text-sm">Review new vendor requests</p>
             </a>
-
-            <a href="{% url 'all_vendors' %}" class="card">
-                <div class="card-icon">👥</div>
-                <div class="card-title">All Vendors</div>
-                <div class="card-description">
-                    View, manage, suspend or activate vendors
-                </div>
+            <a href="{% url 'all_vendors' %}" class="bg-[#141414] border border-[#222] p-6 hover:border-[#444] transition">
+                <div class="text-4xl mb-4"><i class="fas fa-users text-[#555]"></i></div>
+                <h4 class="text-lg font-bold text-white mb-2">All Vendors</h4>
+                <p class="text-[#888] text-sm">View and manage all vendors</p>
             </a>
-
-            <a href="{% url 'all_vendors' %}?status=approved" class="card">
-                <div class="card-icon">✅</div>
-                <div class="card-title">Active Vendors</div>
-                <div class="card-description">
-                    {{ approved_count }} vendors actively selling on platform
-                </div>
+            <a href="{% url 'all_vendors' %}?status=approved" class="bg-[#141414] border border-[#222] p-6 hover:border-[#444] transition">
+                <div class="text-4xl mb-4"><i class="fas fa-check-circle text-[#555]"></i></div>
+                <h4 class="text-lg font-bold text-white mb-2">Active Vendors</h4>
+                <p class="text-[#888] text-sm">{{ approved_count }} actively selling</p>
             </a>
-
-            <a href="{% url 'all_vendors' %}?status=suspended" class="card">
-                <div class="card-icon">🚫</div>
-                <div class="card-title">Suspended Vendors</div>
-                <div class="card-description">
-                    Manage suspended vendor accounts
-                </div>
+            <a href="{% url 'all_vendors' %}?status=suspended" class="bg-[#141414] border border-[#222] p-6 hover:border-[#444] transition">
+                <div class="text-4xl mb-4"><i class="fas fa-ban text-[#555]"></i></div>
+                <h4 class="text-lg font-bold text-white mb-2">Suspended</h4>
+                <p class="text-[#888] text-sm">Manage suspended accounts</p>
             </a>
         </div>
     </div>

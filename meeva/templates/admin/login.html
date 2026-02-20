@@ -4,249 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meeva Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a1a3a 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.15) 0%, transparent 70%);
-            top: -200px;
-            right: -200px;
-            border-radius: 50%;
-        }
-
-        body::after {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(107, 70, 193, 0.15) 0%, transparent 70%);
-            bottom: -150px;
-            left: -150px;
-            border-radius: 50%;
-        }
-
-        .login-container {
-            width: 100%;
-            max-width: 420px;
-            background: rgba(26, 26, 26, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 50px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(147, 51, 234, 0.1);
-            border: 1px solid rgba(147, 51, 234, 0.2);
-            position: relative;
-            z-index: 1;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo h1 {
-            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 38px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin-bottom: 8px;
-        }
-
-        .logo p {
-            color: #a855f7;
-            font-size: 13px;
-            margin-top: 5px;
-            letter-spacing: 1px;
-            font-weight: 500;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 10px;
-            color: #c084fc;
-            font-weight: 600;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 15px 18px;
-            background: rgba(17, 17, 17, 0.8);
-            border: 1.5px solid rgba(147, 51, 234, 0.3);
-            border-radius: 10px;
-            font-size: 15px;
-            color: #e9d5ff;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input::placeholder {
-            color: rgba(168, 85, 247, 0.4);
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #9333ea;
-            background: rgba(17, 17, 17, 1);
-            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 10px;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
-            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
-        }
-
-        .login-btn:active {
-            transform: translateY(0);
-        }
-
-        .messages {
-            margin-bottom: 25px;
-        }
-
-        .alert {
-            padding: 14px 18px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            border-left: 4px solid;
-            backdrop-filter: blur(10px);
-        }
-
-        .alert-success {
-            background-color: rgba(16, 185, 129, 0.1);
-            color: #6ee7b7;
-            border-color: #10b981;
-        }
-
-        .alert-error {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #fca5a5;
-            border-color: #ef4444;
-        }
-
-        .alert-warning {
-            background-color: rgba(245, 158, 11, 0.1);
-            color: #fcd34d;
-            border-color: #f59e0b;
-        }
-
-        .divider {
-            text-align: center;
-            margin: 30px 0;
-            position: relative;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(147, 51, 234, 0.3), transparent);
-        }
-
-        @media (max-width: 500px) {
-            .login-container {
-                padding: 40px 30px;
-                margin: 20px;
-            }
-        }
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
     </style>
 </head>
-<body>
-    <div class="login-container">
+<body class="bg-[#0a0a0a] min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md bg-[#141414] border border-[#222] p-8 fade-up">
         <!-- Logo Section -->
-        <div class="logo">
-            <h1>MEEVA</h1>
-            <p>Admin Control Panel</p>
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white mb-4">
+                <i class="fas fa-shield-alt text-2xl text-[#0a0a0a]"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">MEEVA</h1>
+            <p class="text-[#888] text-sm font-semibold">Admin Control Panel</p>
         </div>
 
         <!-- Messages -->
         {% if messages %}
-            <div class="messages">
+            <div class="mb-6 space-y-3">
                 {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}">
-                        {{ message }}
-                    </div>
+                    <div class="p-3 bg-[#1a1a1a] border border-[#222] text-[#ccc] text-sm font-medium">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
 
         <!-- Login Form -->
-        <form method="POST" class="login-form">
+        <form method="POST" class="space-y-5">
             {% csrf_token %}
-
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    required 
-                    placeholder="Enter your email"
-                >
+            <div>
+                <label class="block text-white font-semibold text-xs uppercase tracking-wide mb-2">Email Address</label>
+                <input type="email" name="email" required placeholder="Enter your email"
+                    class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
             </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    required 
-                    placeholder="Enter your password"
-                >
+            <div>
+                <label class="block text-white font-semibold text-xs uppercase tracking-wide mb-2">Password</label>
+                <input type="password" name="password" required placeholder="Enter your password"
+                    class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
             </div>
-
-            <button type="submit" class="login-btn">Sign In to Dashboard</button>
+            <button type="submit" class="w-full py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">
+                Sign In to Dashboard
+            </button>
         </form>
-
-        
     </div>
 </body>
 </html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orders - Vendor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] min-h-screen text-white">
+    <!-- Navbar -->
+    <nav class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white"><i class="fas fa-store mr-2"></i>{{ vendor.business_name }}</h1>
+        <a href="{% url 'vendor_logout' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">Logout</a>
+    </nav>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4">
+        <div class="flex gap-4 overflow-x-auto">
+            <a href="{% url 'vendor_dashboard' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
+                <i class="fas fa-chart-line mr-2"></i>Overview
+            </a>
+            <a href="{% url 'vendor_products' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
+                <i class="fas fa-box mr-2"></i>Products
+            </a>
+            <a href="{% url 'vendor_orders' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm transition whitespace-nowrap">
+                <i class="fas fa-shopping-cart mr-2"></i>Orders
+            </a>
+            <a href="{% url 'vendor_sales_report' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
+                <i class="fas fa-chart-bar mr-2"></i>Sales Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-6xl mx-auto px-6 py-8 fade-up">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                    <div class="p-3 bg-[#141414] border border-[#222] text-[#ccc] text-sm font-medium">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <h2 class="text-3xl font-bold text-white mb-6">All Orders</h2>
+
+        {% if orders %}
+            <div class="space-y-4">
+                {% for order in orders %}
+                    <div class="bg-[#141414] border border-[#222] p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Order Info -->
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-3">Order #{{ order.id }}</h3>
+                                <div class="space-y-2">
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Product:</span> {{ order.product.name }}</p>
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Quantity:</span> {{ order.quantity }}</p>
+                                    {% if order.size %}
+                                        <p class="text-[#888]"><span class="text-white font-semibold">Size:</span> {{ order.size }}</p>
+                                    {% endif %}
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Price:</span> <span class="text-white">₹{{ order.total_price|floatformat:2 }}</span></p>
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Date:</span> {{ order.created_at|date:"d M, Y H:i" }}</p>
+                                </div>
+                            </div>
+                            <!-- Buyer Info -->
+                            <div>
+                                <h4 class="text-lg font-bold text-white mb-3"><i class="fas fa-user mr-2 text-[#555]"></i>Buyer Details</h4>
+                                <div class="space-y-2">
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Name:</span> {{ order.buyer_name }}</p>
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Email:</span> <a href="mailto:{{ order.buyer_email }}" class="text-white hover:underline">{{ order.buyer_email }}</a></p>
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Phone:</span> <a href="tel:{{ order.buyer_phone }}" class="text-white hover:underline">{{ order.buyer_phone }}</a></p>
+                                    <p class="text-[#888]"><span class="text-white font-semibold">Address:</span> {{ order.buyer_address|truncatewords:10 }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status + Actions -->
+                        <div class="mt-5 flex flex-wrap items-center gap-3 pt-4 border-t border-[#222]">
+                            <span class="px-3 py-1 bg-[#1a1a1a] border border-[#222] text-white text-sm font-semibold">
+                                {{ order.get_status_display }}
+                            </span>
+
+                            {% if order.status == 'pending' %}
+                                <form method="POST" action="{% url 'update_order_status' order.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="confirmed">
+                                    <button type="submit" class="px-4 py-1.5 bg-white text-[#0a0a0a] text-sm font-semibold hover:bg-[#e0e0e0] transition">
+                                        <i class="fas fa-check mr-1"></i>Accept Order
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'update_order_status' order.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="cancelled">
+                                    <button type="submit" class="px-4 py-1.5 bg-[#1a1a1a] border border-[#222] text-[#888] text-sm font-semibold hover:border-[#444] hover:text-white transition">
+                                        <i class="fas fa-times mr-1"></i>Reject Order
+                                    </button>
+                                </form>
+                            {% elif order.status == 'confirmed' %}
+                                <form method="POST" action="{% url 'update_order_status' order.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="shipped">
+                                    <button type="submit" class="px-4 py-1.5 bg-white text-[#0a0a0a] text-sm font-semibold hover:bg-[#e0e0e0] transition">
+                                        <i class="fas fa-truck mr-1"></i>Mark as Shipped
+                                    </button>
+                                </form>
+                            {% elif order.status == 'shipped' %}
+                                <form method="POST" action="{% url 'update_order_status' order.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="status" value="delivered">
+                                    <button type="submit" class="px-4 py-1.5 bg-white text-[#0a0a0a] text-sm font-semibold hover:bg-[#e0e0e0] transition">
+                                        <i class="fas fa-box-open mr-1"></i>Mark as Delivered
+                                    </button>
+                                </form>
+                            {% elif order.status == 'delivered' %}
+                                <span class="text-white text-sm font-semibold"><i class="fas fa-check-double mr-1"></i>Completed</span>
+                            {% elif order.status == 'cancelled' %}
+                                <span class="text-[#555] text-sm font-semibold"><i class="fas fa-ban mr-1"></i>Cancelled</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="bg-[#141414] border border-[#222] p-12 text-center">
+                <i class="fas fa-inbox text-6xl text-[#333] mb-4"></i>
+                <p class="text-[#888] text-lg">No orders yet. Your first order will appear here!</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
