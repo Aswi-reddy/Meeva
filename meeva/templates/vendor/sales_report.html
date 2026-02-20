@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vendor Dashboard - Meeva</title>
+    <title>Sales Report - Vendor Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
     <!-- Navigation Tabs -->
     <div class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4">
         <div class="flex gap-4 overflow-x-auto">
-            <a href="{% url 'vendor_dashboard' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm transition whitespace-nowrap">
+            <a href="{% url 'vendor_dashboard' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
                 <i class="fas fa-chart-line mr-2"></i>Overview
             </a>
             <a href="{% url 'vendor_products' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
@@ -32,40 +32,18 @@
             <a href="{% url 'vendor_orders' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
                 <i class="fas fa-shopping-cart mr-2"></i>Orders
             </a>
-            <a href="{% url 'vendor_sales_report' %}" class="px-4 py-2 text-[#888] hover:text-white font-semibold text-sm transition whitespace-nowrap">
+            <a href="{% url 'vendor_sales_report' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm transition whitespace-nowrap">
                 <i class="fas fa-chart-bar mr-2"></i>Sales Report
             </a>
         </div>
     </div>
 
-    <!-- Messages -->
-    {% if messages %}
-        <div class="max-w-6xl mx-auto px-6 py-4 space-y-2">
-            {% for message in messages %}
-                <div class="p-3 bg-[#141414] border border-[#222] text-[#ccc] text-sm font-medium">{{ message }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <!-- Main Container -->
     <div class="max-w-6xl mx-auto px-6 py-8 fade-up">
-        <!-- Welcome Box -->
-        <div class="bg-[#141414] border border-[#222] p-8 mb-8">
-            <h2 class="text-3xl font-bold text-white mb-2">Welcome, {{ vendor.full_name }}!</h2>
-            <p class="text-[#888]">Your Vendor ID: <span class="text-white font-semibold">{{ vendor.vendor_id }}</span></p>
-        </div>
+        <h2 class="text-3xl font-bold text-white mb-6">Sales Report</h2>
 
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-[#141414] border border-[#222] p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-[#888] text-sm uppercase tracking-wide font-semibold">Total Products</p>
-                        <p class="text-4xl font-bold text-white mt-2">{{ total_products }}</p>
-                    </div>
-                    <i class="fas fa-box text-5xl text-[#333]"></i>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="bg-[#141414] border border-[#222] p-6">
                 <div class="flex items-center justify-between">
                     <div>
@@ -80,7 +58,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-[#888] text-sm uppercase tracking-wide font-semibold">Total Revenue</p>
-                        <p class="text-3xl font-bold text-white mt-2">₹{{ total_revenue|floatformat:2 }}</p>
+                        <p class="text-4xl font-bold text-white mt-2">₹{{ total_revenue|floatformat:2 }}</p>
                         <p class="text-[#555] text-xs mt-1">(Excluding cancelled)</p>
                     </div>
                     <i class="fas fa-rupee-sign text-5xl text-[#333]"></i>
@@ -88,36 +66,67 @@
             </div>
         </div>
 
-        <!-- Recent Orders -->
+        <!-- Sales Table -->
         <div class="bg-[#141414] border border-[#222] p-6">
-            <h3 class="text-xl font-bold text-white mb-4"><i class="fas fa-history mr-2"></i>Recent Orders</h3>
-            {% if recent_orders %}
+            <h3 class="text-xl font-bold text-white mb-4">Detailed Sales</h3>
+            {% if orders %}
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
                             <tr class="border-b border-[#222]">
                                 <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Order ID</th>
                                 <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Product</th>
-                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Buyer Name</th>
-                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Amount</th>
+                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Buyer</th>
+                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Qty</th>
+                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Price/Unit</th>
+                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Total</th>
+                                <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Status</th>
                                 <th class="text-left px-4 py-3 text-[#888] font-semibold text-sm uppercase tracking-wide">Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for order in recent_orders %}
-                                <tr class="border-b border-[#222] hover:bg-[#1a1a1a] transition">
+                            {% for order in orders %}
+                                <tr class="border-b border-[#222] hover:bg-[#1a1a1a] transition {% if order.status == 'cancelled' %}opacity-50{% endif %}">
                                     <td class="px-4 py-3 text-white font-medium">#{{ order.id }}</td>
-                                    <td class="px-4 py-3 text-white">{{ order.product.name }}</td>
+                                    <td class="px-4 py-3 text-white {% if order.status == 'cancelled' %}line-through{% endif %}">{{ order.product.name }}</td>
                                     <td class="px-4 py-3 text-white">{{ order.buyer_name }}</td>
-                                    <td class="px-4 py-3 text-white font-semibold">₹{{ order.total_price|floatformat:2 }}</td>
+                                    <td class="px-4 py-3 text-white">{{ order.quantity }}</td>
+                                    <td class="px-4 py-3 text-white font-medium">₹{{ order.price_per_unit|floatformat:2 }}</td>
+                                    <td class="px-4 py-3 text-white font-semibold {% if order.status == 'cancelled' %}line-through text-[#555]{% endif %}">₹{{ order.total_price|floatformat:2 }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-1 bg-[#1a1a1a] border border-[#222] text-[#888] text-xs font-semibold">
+                                            {% if order.status == 'cancelled' %}
+                                                <i class="fas fa-times-circle mr-1"></i>Cancelled
+                                            {% elif order.status == 'delivered' %}
+                                                <i class="fas fa-check-circle mr-1"></i>Delivered
+                                            {% elif order.status == 'shipped' %}
+                                                <i class="fas fa-shipping-fast mr-1"></i>Shipped
+                                            {% elif order.status == 'confirmed' %}
+                                                <i class="fas fa-check mr-1"></i>Confirmed
+                                            {% else %}
+                                                <i class="fas fa-clock mr-1"></i>Pending
+                                            {% endif %}
+                                        </span>
+                                    </td>
                                     <td class="px-4 py-3 text-[#888]">{{ order.created_at|date:"d M, Y" }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Total Summary -->
+                <div class="mt-6 flex justify-end border-t border-[#222] pt-6">
+                    <div class="text-right">
+                        <p class="text-[#888] text-lg mb-2">Grand Total (Excludes Cancelled):</p>
+                        <p class="text-4xl font-bold text-white">₹{{ total_revenue|floatformat:2 }}</p>
+                    </div>
+                </div>
             {% else %}
-                <p class="text-[#888] text-center py-6">No orders yet. Add products to start selling!</p>
+                <div class="text-center py-8">
+                    <i class="fas fa-chart-line text-6xl text-[#333] mb-4"></i>
+                    <p class="text-[#888] text-lg">No sales data yet. Your sales will be tracked here!</p>
+                </div>
             {% endif %}
         </div>
     </div>

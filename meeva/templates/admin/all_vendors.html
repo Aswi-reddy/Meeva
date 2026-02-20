@@ -6,99 +6,95 @@
     <title>All Vendors - Meeva Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen text-slate-100">
+<body class="bg-[#0a0a0a] min-h-screen text-white">
     <!-- Navbar -->
-    <nav class="bg-slate-800 border-b border-purple-500/30 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-purple-400"><i class="fas fa-store mr-2"></i>MEEVA Admin - All Vendors</h1>
+    <nav class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white"><i class="fas fa-users mr-2"></i>MEEVA Admin - All Vendors</h1>
         <div class="flex items-center gap-4">
-            <a href="{% url 'admin_dashboard' %}" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
+            <a href="{% url 'admin_dashboard' %}" class="px-4 py-2 border border-[#222] text-[#888] hover:text-white hover:border-[#444] transition font-semibold text-sm">
                 <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
             </a>
-            <a href="{% url 'admin_logout' %}" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition">
-                Logout
-            </a>
+            <a href="{% url 'admin_logout' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">Logout</a>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="max-w-7xl mx-auto px-6 py-8 fade-up">
         <!-- Messages -->
         {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
-                    <div class="p-4 bg-green-500/10 border border-green-500/30 text-green-300 rounded-lg">
-                        {{ message }}
-                    </div>
+                    <div class="p-4 bg-[#141414] border border-[#222] text-[#ccc] font-medium">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        <!-- Page Title -->
-        <h2 class="text-3xl font-bold text-white mb-6"><i class="fas fa-users mr-2 text-purple-400"></i>All Vendors</h2>
+        <h2 class="text-3xl font-bold text-white mb-6">All Vendors</h2>
 
         <!-- Filter Tabs -->
         <div class="flex gap-3 mb-8 overflow-x-auto pb-2">
-            <a href="?status=all" class="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition 
-                {% if status_filter == 'all' %}bg-purple-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}">
+            <a href="?status=all" class="px-4 py-2 font-semibold text-sm whitespace-nowrap transition
+                {% if status_filter == 'all' %}bg-white text-[#0a0a0a]{% else %}border border-[#222] text-[#888] hover:text-white hover:border-[#444]{% endif %}">
                 All Vendors
             </a>
-            <a href="?status=pending" class="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition 
-                {% if status_filter == 'pending' %}bg-purple-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}">
+            <a href="?status=pending" class="px-4 py-2 font-semibold text-sm whitespace-nowrap transition
+                {% if status_filter == 'pending' %}bg-white text-[#0a0a0a]{% else %}border border-[#222] text-[#888] hover:text-white hover:border-[#444]{% endif %}">
                 Pending
             </a>
-            <a href="?status=approved" class="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition 
-                {% if status_filter == 'approved' %}bg-purple-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}">
+            <a href="?status=approved" class="px-4 py-2 font-semibold text-sm whitespace-nowrap transition
+                {% if status_filter == 'approved' %}bg-white text-[#0a0a0a]{% else %}border border-[#222] text-[#888] hover:text-white hover:border-[#444]{% endif %}">
                 Approved
             </a>
-            <a href="?status=rejected" class="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition 
-                {% if status_filter == 'rejected' %}bg-purple-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}">
+            <a href="?status=rejected" class="px-4 py-2 font-semibold text-sm whitespace-nowrap transition
+                {% if status_filter == 'rejected' %}bg-white text-[#0a0a0a]{% else %}border border-[#222] text-[#888] hover:text-white hover:border-[#444]{% endif %}">
                 Rejected
             </a>
-            <a href="?status=suspended" class="px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition 
-                {% if status_filter == 'suspended' %}bg-purple-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}">
+            <a href="?status=suspended" class="px-4 py-2 font-semibold text-sm whitespace-nowrap transition
+                {% if status_filter == 'suspended' %}bg-white text-[#0a0a0a]{% else %}border border-[#222] text-[#888] hover:text-white hover:border-[#444]{% endif %}">
                 Suspended
             </a>
         </div>
 
         <!-- Vendors Table -->
         {% if vendors %}
-        <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg overflow-hidden shadow-lg">
+        <div class="bg-[#141414] border border-[#222] overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full">
-                    <thead class="bg-purple-600 text-white">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">ID</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Business Name</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Contact Person</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Email</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Phone</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Joined</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
-                            <th class="px-6 py-4 text-left text-sm font-semibold">Action</th>
+                    <thead>
+                        <tr class="border-b border-[#222]">
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">ID</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Business Name</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Contact</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Email</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Phone</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Joined</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Status</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-[#888] uppercase tracking-wide">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-purple-500/20">
+                    <tbody>
                         {% for vendor in vendors %}
-                        <tr class="hover:bg-purple-500/10 transition">
-                            <td class="px-6 py-4 text-sm text-slate-300">#{{ vendor.id }}</td>
+                        <tr class="border-b border-[#222] hover:bg-[#1a1a1a] transition">
+                            <td class="px-6 py-4 text-sm text-[#888]">#{{ vendor.id }}</td>
                             <td class="px-6 py-4 text-sm font-semibold text-white">{{ vendor.business_name }}</td>
-                            <td class="px-6 py-4 text-sm text-slate-300">{{ vendor.full_name }}</td>
-                            <td class="px-6 py-4 text-sm text-slate-300">{{ vendor.email }}</td>
-                            <td class="px-6 py-4 text-sm text-slate-300">{{ vendor.phone }}</td>
-                            <td class="px-6 py-4 text-sm text-slate-400">{{ vendor.created_at|date:"M d, Y" }}</td>
+                            <td class="px-6 py-4 text-sm text-[#888]">{{ vendor.full_name }}</td>
+                            <td class="px-6 py-4 text-sm text-[#888]">{{ vendor.email }}</td>
+                            <td class="px-6 py-4 text-sm text-[#888]">{{ vendor.phone }}</td>
+                            <td class="px-6 py-4 text-sm text-[#555]">{{ vendor.created_at|date:"M d, Y" }}</td>
                             <td class="px-6 py-4 text-sm">
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold
-                                    {% if vendor.status == 'pending' %}bg-amber-500/20 text-amber-300
-                                    {% elif vendor.status == 'approved' %}bg-green-500/20 text-green-300
-                                    {% elif vendor.status == 'rejected' %}bg-red-500/20 text-red-300
-                                    {% elif vendor.status == 'suspended' %}bg-slate-500/20 text-slate-300
-                                    {% endif %}">
+                                <span class="inline-block px-3 py-1 bg-[#1a1a1a] border border-[#222] text-[#888] text-xs font-bold">
                                     {{ vendor.get_status_display }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm">
-                                <a href="{% url 'vendor_detail' vendor.id %}" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded transition">
+                                <a href="{% url 'vendor_detail' vendor.id %}" class="px-3 py-2 bg-white text-[#0a0a0a] text-xs font-semibold hover:bg-[#e0e0e0] transition">
                                     View
                                 </a>
                             </td>
@@ -109,10 +105,10 @@
             </div>
         </div>
         {% else %}
-        <div class="text-center py-16">
-            <div class="text-6xl mb-4"><i class="fas fa-inbox text-slate-500"></i></div>
+        <div class="text-center py-16 bg-[#141414] border border-[#222]">
+            <i class="fas fa-inbox text-6xl text-[#333] mb-4"></i>
             <h3 class="text-xl font-bold text-white mb-2">No Vendors Found</h3>
-            <p class="text-slate-400">No vendors match the selected filter.</p>
+            <p class="text-[#888]">No vendors match the selected filter.</p>
         </div>
         {% endif %}
     </div>

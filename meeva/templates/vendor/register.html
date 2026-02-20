@@ -6,267 +6,248 @@
     <title>Vendor Registration - Meeva</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen py-8 px-4 text-slate-100">
-    <div class="max-w-3xl mx-auto">
+<body class="bg-[#0a0a0a] min-h-screen py-8 px-4 text-white">
+    <div class="max-w-3xl mx-auto fade-up">
         <!-- Header -->
         <div class="text-center mb-12">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-600 rounded-2xl mb-6 shadow-lg">
-                <i class="fas fa-store text-2xl text-white"></i>
-            </div>
-            <h1 class="text-4xl font-bold text-white mb-2">Meeva Vendor Portal</h1>
-            <p class="text-xl text-purple-300 mb-2"><i class="fas fa-sparkles mr-2"></i>Join Our Marketplace</p>
-            <p class="text-slate-400">Register your business in 5 minutes</p>
+            <h1 class="text-3xl font-bold text-white mb-2">MEEVA VENDOR PORTAL</h1>
+            <p class="text-white text-lg mb-1">Join Our Marketplace</p>
+            <p class="text-[#888] text-sm">Register your business in 5 minutes</p>
         </div>
 
         <!-- Info Alert -->
         {% if not messages %}
-        <div class="mb-8 p-5 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+        <div class="mb-8 p-5 bg-[#141414] border border-[#222]">
             <div class="flex gap-4">
-                <i class="fas fa-hourglass-half text-2xl text-blue-400 flex-shrink-0"></i>
+                <i class="fas fa-hourglass-half text-2xl text-[#555] flex-shrink-0"></i>
                 <div>
-                    <p class="text-blue-300 font-semibold mb-1">Fast Approval Process</p>
-                    <p class="text-slate-400 text-sm">Applications reviewed within 24-48 hours. Keep credentials safe!</p>
+                    <p class="text-white font-semibold mb-1">Fast Approval Process</p>
+                    <p class="text-[#888] text-sm">Applications reviewed within 24-48 hours. Keep credentials safe!</p>
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <!-- Messages -->
         {% if messages %}
             <div class="mb-8 space-y-3">
                 {% for message in messages %}
-                    <div class="p-4 bg-green-500/10 border border-green-500/30 text-green-300 rounded-lg">
-                        {{ message }}
-                    </div>
+                    <div class="p-4 bg-[#141414] border border-[#222] text-[#ccc] font-medium text-sm">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
 
-        <!-- Main Form Card -->
-        <form method="POST" enctype="multipart/form-data" class="bg-slate-800/50 border border-purple-500/20 rounded-2xl backdrop-blur-xl p-8 shadow-2xl space-y-8">
+        <!-- Main Form -->
+        <form method="POST" enctype="multipart/form-data" class="bg-[#141414] border border-[#222] p-8 space-y-8">
             {% csrf_token %}
 
             <!-- Personal Information -->
             <div>
-                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fas fa-user text-purple-400"></i> Personal Information
-                </h2>
-                <p class="text-slate-400 text-sm mb-6">Tell us who you are</p>
-                
+                <h2 class="text-xl font-bold text-white mb-2">PERSONAL INFORMATION</h2>
+                <p class="text-[#888] text-sm mb-6">Tell us who you are</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Full Name *</label>
-                        <input type="text" name="full_name" required 
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                        <label class="block text-white font-semibold text-sm mb-2">Full Name *</label>
+                        <input type="text" name="full_name" required
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="John Doe">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Phone Number *</label>
-                        <input type="tel" name="phone" required 
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                        <label class="block text-white font-semibold text-sm mb-2">Phone Number *</label>
+                        <input type="tel" name="phone" required
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="+919876543210">
                     </div>
                 </div>
-
                 <div class="mt-6">
-                    <label class="block text-purple-300 font-semibold text-sm mb-2">Email Address *</label>
-                    <input type="email" name="email" required 
-                        class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                    <label class="block text-white font-semibold text-sm mb-2">Email Address *</label>
+                    <input type="email" name="email" required
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                         placeholder="vendor@example.com">
                 </div>
             </div>
 
-            <div class="border-t border-purple-500/20"></div>
+            <div class="border-t border-[#222]"></div>
 
             <!-- Password Section -->
             <div>
-                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fas fa-lock text-purple-400"></i> Create Password
-                </h2>
-                <p class="text-slate-400 text-sm mb-6">Secure your account</p>
-                
+                <h2 class="text-xl font-bold text-white mb-2">CREATE PASSWORD</h2>
+                <p class="text-[#888] text-sm mb-6">Secure your account</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Password *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Password *</label>
                         <input type="password" id="password" name="password" required minlength="6"
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="At least 6 characters">
                         <div id="strength-meter" class="mt-2 text-xs"></div>
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Confirm Password *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Confirm Password *</label>
                         <input type="password" id="confirm_password" name="confirm_password" required minlength="6"
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="Re-enter password">
                         <div id="match-meter" class="mt-2 text-xs"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-purple-500/20"></div>
+            <div class="border-t border-[#222]"></div>
 
             <!-- Business Information -->
             <div>
-                <h2 class="text-2xl font-bold text-white mb-2"><i class="fas fa-briefcase text-purple-400 mr-2"></i>Business Information</h2>
-                <p class="text-slate-400 text-sm mb-6">Details about your business</p>
-                
+                <h2 class="text-xl font-bold text-white mb-2">BUSINESS INFORMATION</h2>
+                <p class="text-[#888] text-sm mb-6">Details about your business</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Business Name *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Business Name *</label>
                         <input type="text" name="business_name" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="Your Business Name">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">License Number *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">License Number *</label>
                         <input type="text" name="license_number" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="Business license #">
                     </div>
                 </div>
-
                 <div class="mt-6">
-                    <label class="block text-purple-300 font-semibold text-sm mb-2">Business Address *</label>
+                    <label class="block text-white font-semibold text-sm mb-2">Business Address *</label>
                     <textarea name="business_address" required
-                        class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition h-24"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition h-24"
                         placeholder="Full business address"></textarea>
                 </div>
-
                 <div class="mt-6">
-                    <label class="block text-purple-300 font-semibold text-sm mb-2">Business Description (Optional)</label>
+                    <label class="block text-white font-semibold text-sm mb-2">Business Description (Optional)</label>
                     <textarea name="business_description"
-                        class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition h-20"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition h-20"
                         placeholder="Tell us about your business..."></textarea>
                 </div>
             </div>
 
-            <div class="border-t border-purple-500/20"></div>
+            <div class="border-t border-[#222]"></div>
 
             <!-- KYC Documents -->
             <div>
-                <h2 class="text-2xl font-bold text-white mb-2"><i class="fas fa-file-alt text-purple-400 mr-2"></i>KYC Documents</h2>
-                <p class="text-slate-400 text-sm mb-6">Upload required identity documents</p>
-                
+                <h2 class="text-xl font-bold text-white mb-2">KYC DOCUMENTS</h2>
+                <p class="text-[#888] text-sm mb-6">Upload required identity documents</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Aadhar Number *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Aadhar Number *</label>
                         <input type="text" name="aadhar_number" required pattern="\d{12}"
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="12 digits">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">PAN Number *</label>
-                        <input type="text" name="pan_number" required pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition uppercase"
+                        <label class="block text-white font-semibold text-sm mb-2">PAN Number *</label>
+                        <input type="text" id="pan_number" name="pan_number" required pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition uppercase"
                             placeholder="ABCDE1234F">
                     </div>
                 </div>
-
                 <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Aadhar Card Image *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Aadhar Card Image *</label>
                         <input type="file" name="aadhar_image" accept="image/*" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 transition">
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-[#888] text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-white file:text-[#0a0a0a] hover:file:bg-[#e0e0e0] transition">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">PAN Card Image *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">PAN Card Image *</label>
                         <input type="file" name="pan_image" accept="image/*" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 transition">
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-[#888] text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-white file:text-[#0a0a0a] hover:file:bg-[#e0e0e0] transition">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">License Image *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">License Image *</label>
                         <input type="file" name="license_image" accept="image/*" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 transition">
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-[#888] text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-white file:text-[#0a0a0a] hover:file:bg-[#e0e0e0] transition">
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-purple-500/20"></div>
+            <div class="border-t border-[#222]"></div>
 
             <!-- Bank Details -->
             <div>
-                <h2 class="text-2xl font-bold text-white mb-2"><i class="fas fa-university text-purple-400 mr-2"></i>Bank Details</h2>
-                <p class="text-slate-400 text-sm mb-6">Payment information</p>
-                
+                <h2 class="text-xl font-bold text-white mb-2">BANK DETAILS</h2>
+                <p class="text-[#888] text-sm mb-6">Payment information</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Bank Name *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Bank Name *</label>
                         <input type="text" name="bank_name" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="State Bank of India">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Account Holder *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Account Holder *</label>
                         <input type="text" name="account_holder_name" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="Full name">
                     </div>
                 </div>
-
                 <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">Account Number *</label>
+                        <label class="block text-white font-semibold text-sm mb-2">Account Number *</label>
                         <input type="text" name="account_number" required
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
                             placeholder="Your account number">
                     </div>
                     <div>
-                        <label class="block text-purple-300 font-semibold text-sm mb-2">IFSC Code *</label>
-                        <input type="text" name="ifsc_code" required pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                            class="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 focus:bg-slate-700 transition uppercase"
+                        <label class="block text-white font-semibold text-sm mb-2">IFSC Code *</label>
+                        <input type="text" id="ifsc_code" name="ifsc_code" required pattern="[A-Z]{4}0[A-Z0-9]{6}"
+                            class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition uppercase"
                             placeholder="SBIN0001234">
                     </div>
                 </div>
             </div>
 
-            <div class="border-t border-purple-500/20"></div>
+            <div class="border-t border-[#222]"></div>
 
-            <!-- Submit Button -->
+            <!-- Submit -->
             <div class="flex flex-col gap-4">
-                <button type="submit" class="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold text-lg rounded-xl transition transform hover:scale-105 shadow-xl">
+                <button type="submit" class="w-full py-4 px-6 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">
                     <i class="fas fa-paper-plane mr-2"></i>Submit Registration
                 </button>
-                <p class="text-center text-slate-400 text-sm">
-                    Already registered? <a href="{% url 'vendor_login' %}" class="text-purple-400 hover:text-purple-300 font-semibold transition">Login here <i class="fas fa-arrow-right ml-1"></i></a>
+                <p class="text-center text-[#888] text-sm">
+                    Already registered? <a href="{% url 'vendor_login' %}" class="text-white hover:underline font-semibold">Login here</a>
                 </p>
             </div>
         </form>
     </div>
 
     <script>
-        // Auto-uppercase inputs
         document.getElementById('pan_number')?.addEventListener('input', e => e.target.value = e.target.value.toUpperCase());
         document.getElementById('ifsc_code')?.addEventListener('input', e => e.target.value = e.target.value.toUpperCase());
 
-        // Password strength check
         const pwd = document.getElementById('password');
         pwd?.addEventListener('input', function() {
-            const strength = ['weak', 'weak', 'medium', 'strong', 'strong'];
             const len = this.value.length;
             let score = len >= 6 ? 1 : 0;
             if (/[A-Z]/.test(this.value) && /[a-z]/.test(this.value)) score++;
             if (/\d/.test(this.value)) score++;
-            
+            const labels = ['WEAK', 'WEAK', 'MEDIUM', 'STRONG', 'STRONG'];
             const meter = document.getElementById('strength-meter');
-            meter.innerHTML = len > 0 ? `<span class="text-${score > 2 ? 'green' : 'yellow'}-400"><i class="fas fa-lock mr-1"></i>${strength[score].toUpperCase()}</span>` : '';
+            meter.innerHTML = len > 0 ? `<span class="text-[#888]"><i class="fas fa-lock mr-1"></i>${labels[score]}</span>` : '';
         });
 
-        // Password match check
-        const confirm = document.getElementById('confirm_password');
-        confirm?.addEventListener('input', function() {
+        const confirm_pwd = document.getElementById('confirm_password');
+        confirm_pwd?.addEventListener('input', function() {
             const match = this.value === pwd.value;
             const meter = document.getElementById('match-meter');
             if (this.value) {
-                meter.innerHTML = match ? '<span class="text-green-400"><i class="fas fa-check mr-1"></i>Passwords match</span>' : '<span class="text-red-400"><i class="fas fa-times mr-1"></i>Passwords don\'t match</span>';
+                meter.innerHTML = match ? '<span class="text-[#888]"><i class="fas fa-check mr-1"></i>Passwords match</span>' : '<span class="text-[#888]"><i class="fas fa-times mr-1"></i>Passwords don\'t match</span>';
             }
         });
 
-        // Form validation
         document.querySelector('form')?.addEventListener('submit', function(e) {
-            if (pwd.value !== confirm.value) {
+            if (pwd.value !== confirm_pwd.value) {
                 e.preventDefault();
-                confirm.focus();
+                confirm_pwd.focus();
                 alert('Passwords do not match!');
             }
         });

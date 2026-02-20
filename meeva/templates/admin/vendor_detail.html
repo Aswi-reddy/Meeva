@@ -6,247 +6,242 @@
     <title>Vendor Details - {{ vendor.business_name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen text-slate-100">
+<body class="bg-[#0a0a0a] min-h-screen text-white">
     <!-- Navbar -->
-    <nav class="bg-slate-800 border-b border-purple-500/30 px-6 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-purple-400"><i class="fas fa-store mr-2"></i>MEEVA Admin - Vendor Details</h1>
+    <nav class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white"><i class="fas fa-file-alt mr-2"></i>MEEVA Admin - Vendor Details</h1>
         <div class="flex items-center gap-4">
-            <a href="{% url 'all_vendors' %}" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition">
+            <a href="{% url 'all_vendors' %}" class="px-4 py-2 border border-[#222] text-[#888] hover:text-white hover:border-[#444] transition font-semibold text-sm">
                 <i class="fas fa-arrow-left mr-2"></i>Back to Vendors
             </a>
-            <a href="{% url 'admin_logout' %}" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition">
-                Logout
-            </a>
+            <a href="{% url 'admin_logout' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">Logout</a>
         </div>
     </nav>
 
     <!-- Main Container -->
-    <div class="max-w-6xl mx-auto px-6 py-8">
+    <div class="max-w-6xl mx-auto px-6 py-8 fade-up">
         <!-- Messages -->
         {% if messages %}
             <div class="mb-6 space-y-3">
                 {% for message in messages %}
-                    <div class="p-4 bg-green-500/10 border border-green-500/30 text-green-300 rounded-lg">
-                        {{ message }}
-                    </div>
+                    <div class="p-4 bg-[#141414] border border-[#222] text-[#ccc] font-medium">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
 
         <!-- Vendor Header -->
-        <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6 mb-8 flex justify-between items-start md:items-center gap-4">
+        <div class="bg-[#141414] border border-[#222] p-6 mb-8 flex justify-between items-start md:items-center gap-4">
             <div>
                 <h2 class="text-3xl font-bold text-white mb-2">{{ vendor.business_name }}</h2>
-                <p class="text-slate-400">Vendor ID: #{{ vendor.id }} | Registered: {{ vendor.created_at|date:"F d, Y" }}</p>
+                <p class="text-[#888]">Vendor ID: #{{ vendor.id }} | Registered: {{ vendor.created_at|date:"F d, Y" }}</p>
             </div>
-            <span class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap
-                {% if vendor.status == 'pending' %}bg-amber-500/20 text-amber-300
-                {% elif vendor.status == 'approved' %}bg-green-500/20 text-green-300
-                {% elif vendor.status == 'rejected' %}bg-red-500/20 text-red-300
-                {% elif vendor.status == 'suspended' %}bg-slate-500/20 text-slate-300
-                {% endif %}">
+            <span class="px-4 py-2 bg-[#1a1a1a] border border-[#222] text-[#888] text-sm font-bold whitespace-nowrap">
                 {{ vendor.get_status_display }}
             </span>
         </div>
 
         <!-- Approval/Rejection Info -->
         {% if vendor.status == 'approved' %}
-            <div class="mb-8 p-4 bg-green-500/10 border-l-4 border-green-500 rounded-lg">
-                <p class="text-green-300"><strong>Approved by:</strong> {{ vendor.approved_by }} on {{ vendor.approved_at|date:"F d, Y H:i" }}</p>
+            <div class="mb-8 p-4 bg-[#141414] border border-[#222]">
+                <p class="text-[#ccc] font-semibold"><strong class="text-white">Approved by:</strong> {{ vendor.approved_by }} on {{ vendor.approved_at|date:"F d, Y H:i" }}</p>
             </div>
         {% elif vendor.status == 'rejected' %}
-            <div class="mb-8 p-4 bg-red-500/10 border-l-4 border-red-500 rounded-lg">
-                <p class="text-red-300"><strong>Rejection Reason:</strong> {{ vendor.rejection_reason }}</p>
+            <div class="mb-8 p-4 bg-[#141414] border border-[#222]">
+                <p class="text-[#ccc] font-semibold"><strong class="text-white">Rejection Reason:</strong> {{ vendor.rejection_reason }}</p>
             </div>
         {% endif %}
 
         <!-- Information Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <!-- Personal Information -->
-            <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-purple-300 mb-4 pb-3 border-b border-purple-500/30"><i class="fas fa-user text-purple-400 mr-2"></i>Personal Information</h3>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <h3 class="text-lg font-bold text-white mb-4 pb-3 border-b border-[#222]"><i class="fas fa-user text-[#555] mr-2"></i>Personal Information</h3>
                 <div class="space-y-4">
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Full Name</div>
-                        <div class="text-white">{{ vendor.full_name }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Full Name</div>
+                        <div class="text-white font-medium">{{ vendor.full_name }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Email</div>
-                        <div class="text-white">{{ vendor.email }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Email</div>
+                        <div class="text-white font-medium">{{ vendor.email }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Phone</div>
-                        <div class="text-white">{{ vendor.phone }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Phone</div>
+                        <div class="text-white font-medium">{{ vendor.phone }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Business Information -->
-            <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-purple-300 mb-4 pb-3 border-b border-purple-500/30"><i class="fas fa-briefcase text-purple-400 mr-2"></i>Business Information</h3>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <h3 class="text-lg font-bold text-white mb-4 pb-3 border-b border-[#222]"><i class="fas fa-briefcase text-[#555] mr-2"></i>Business Information</h3>
                 <div class="space-y-4">
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Business Name</div>
-                        <div class="text-white">{{ vendor.business_name }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Business Name</div>
+                        <div class="text-white font-medium">{{ vendor.business_name }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">License Number</div>
-                        <div class="text-white">{{ vendor.license_number }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">License Number</div>
+                        <div class="text-white font-medium">{{ vendor.license_number }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Address</div>
-                        <div class="text-white text-sm">{{ vendor.business_address }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Address</div>
+                        <div class="text-white text-sm font-medium">{{ vendor.business_address }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- KYC Information -->
-            <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-purple-300 mb-4 pb-3 border-b border-purple-500/30"><i class="fas fa-file-alt text-purple-400 mr-2"></i>KYC Documents</h3>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <h3 class="text-lg font-bold text-white mb-4 pb-3 border-b border-[#222]"><i class="fas fa-file-alt text-[#555] mr-2"></i>KYC Documents</h3>
                 <div class="space-y-4">
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Aadhar Number</div>
-                        <div class="text-white">{{ vendor.aadhar_number }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Aadhar Number</div>
+                        <div class="text-white font-medium">{{ vendor.aadhar_number }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">PAN Number</div>
-                        <div class="text-white">{{ vendor.pan_number }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">PAN Number</div>
+                        <div class="text-white font-medium">{{ vendor.pan_number }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Bank Details -->
-            <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-purple-300 mb-4 pb-3 border-b border-purple-500/30"><i class="fas fa-university text-purple-400 mr-2"></i>Bank Details</h3>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <h3 class="text-lg font-bold text-white mb-4 pb-3 border-b border-[#222]"><i class="fas fa-university text-[#555] mr-2"></i>Bank Details</h3>
                 <div class="space-y-4">
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Bank Name</div>
-                        <div class="text-white">{{ vendor.bank_name }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Bank Name</div>
+                        <div class="text-white font-medium">{{ vendor.bank_name }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Account Holder</div>
-                        <div class="text-white">{{ vendor.account_holder_name }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Account Holder</div>
+                        <div class="text-white font-medium">{{ vendor.account_holder_name }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Account Number</div>
-                        <div class="text-white">{{ vendor.account_number }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Account Number</div>
+                        <div class="text-white font-medium">{{ vendor.account_number }}</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">IFSC Code</div>
-                        <div class="text-white">{{ vendor.ifsc_code }}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">IFSC Code</div>
+                        <div class="text-white font-medium">{{ vendor.ifsc_code }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Platform Settings -->
-            <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-purple-300 mb-4 pb-3 border-b border-purple-500/30"><i class="fas fa-cog text-purple-400 mr-2"></i>Platform Settings</h3>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <h3 class="text-lg font-bold text-white mb-4 pb-3 border-b border-[#222]"><i class="fas fa-cog text-[#555] mr-2"></i>Platform Settings</h3>
                 <div class="space-y-4">
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Platform Fee</div>
-                        <div class="text-white">{{ vendor.platform_fee_percentage }}%</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Platform Fee</div>
+                        <div class="text-white font-medium">{{ vendor.platform_fee_percentage }}%</div>
                     </div>
                     <div>
-                        <div class="text-xs uppercase text-slate-400 tracking-wide">Account Status</div>
-                        <div class="text-white">{% if vendor.is_active %}Active{% else %}Inactive{% endif %}</div>
+                        <div class="text-xs uppercase text-[#555] tracking-wide font-semibold">Account Status</div>
+                        <div class="text-white font-medium">{% if vendor.is_active %}Active{% else %}Inactive{% endif %}</div>
                     </div>
                 </div>
             </div>
 
             <!-- Business Description -->
             {% if vendor.business_description %}
-            <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-                <h3 class="text-lg font-bold text-purple-300 mb-4 pb-3 border-b border-purple-500/30"><i class="fas fa-editor mr-2 text-purple-400"></i>Description</h3>
-                <p class="text-white text-sm">{{ vendor.business_description }}</p>
+            <div class="bg-[#141414] border border-[#222] p-6">
+                <h3 class="text-lg font-bold text-white mb-4 pb-3 border-b border-[#222]"><i class="fas fa-pen text-[#555] mr-2"></i>Description</h3>
+                <p class="text-[#888] text-sm font-medium">{{ vendor.business_description }}</p>
             </div>
             {% endif %}
         </div>
 
         <!-- Document Images -->
-        <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6 mb-8">
-            <h3 class="text-xl font-bold text-purple-300 mb-6"><i class="fas fa-images mr-2 text-purple-400"></i>Uploaded Documents</h3>
+        <div class="bg-[#141414] border border-[#222] p-6 mb-8">
+            <h3 class="text-xl font-bold text-white mb-6"><i class="fas fa-images mr-2 text-[#555]"></i>Uploaded Documents</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="border-2 border-dashed border-purple-500/30 rounded-lg p-4 text-center hover:border-purple-500/60 transition">
-                    <h4 class="text-purple-300 font-semibold mb-3">Aadhar Card</h4>
+                <div class="border border-dashed border-[#333] p-4 text-center hover:border-[#444] transition">
+                    <h4 class="text-white font-semibold mb-3">Aadhar Card</h4>
                     {% if vendor.aadhar_image %}
-                        <img src="{{ vendor.aadhar_image.url }}" alt="Aadhar Card" class="w-full h-40 object-cover rounded mb-3 cursor-pointer hover:opacity-80 transition" onclick="openModal('{{ vendor.aadhar_image.url }}')">
-                        <a href="{{ vendor.aadhar_image.url }}" target="_blank" class="inline-block px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded transition">View Full Size</a>
+                        <img src="{{ vendor.aadhar_image.url }}" alt="Aadhar Card" class="w-full h-40 object-cover mb-3 cursor-pointer hover:opacity-80 transition" onclick="openModal('{{ vendor.aadhar_image.url }}')">
+                        <a href="{{ vendor.aadhar_image.url }}" target="_blank" class="inline-block px-3 py-2 bg-white text-[#0a0a0a] text-xs font-semibold hover:bg-[#e0e0e0] transition">View Full Size</a>
                     {% else %}
-                        <p class="text-slate-400">No document uploaded</p>
+                        <p class="text-[#555]">No document uploaded</p>
                     {% endif %}
                 </div>
-
-                <div class="border-2 border-dashed border-purple-500/30 rounded-lg p-4 text-center hover:border-purple-500/60 transition">
-                    <h4 class="text-purple-300 font-semibold mb-3">PAN Card</h4>
+                <div class="border border-dashed border-[#333] p-4 text-center hover:border-[#444] transition">
+                    <h4 class="text-white font-semibold mb-3">PAN Card</h4>
                     {% if vendor.pan_image %}
-                        <img src="{{ vendor.pan_image.url }}" alt="PAN Card" class="w-full h-40 object-cover rounded mb-3 cursor-pointer hover:opacity-80 transition" onclick="openModal('{{ vendor.pan_image.url }}')">
-                        <a href="{{ vendor.pan_image.url }}" target="_blank" class="inline-block px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded transition">View Full Size</a>
+                        <img src="{{ vendor.pan_image.url }}" alt="PAN Card" class="w-full h-40 object-cover mb-3 cursor-pointer hover:opacity-80 transition" onclick="openModal('{{ vendor.pan_image.url }}')">
+                        <a href="{{ vendor.pan_image.url }}" target="_blank" class="inline-block px-3 py-2 bg-white text-[#0a0a0a] text-xs font-semibold hover:bg-[#e0e0e0] transition">View Full Size</a>
                     {% else %}
-                        <p class="text-slate-400">No document uploaded</p>
+                        <p class="text-[#555]">No document uploaded</p>
                     {% endif %}
                 </div>
-
-                <div class="border-2 border-dashed border-purple-500/30 rounded-lg p-4 text-center hover:border-purple-500/60 transition">
-                    <h4 class="text-purple-300 font-semibold mb-3">Business License</h4>
+                <div class="border border-dashed border-[#333] p-4 text-center hover:border-[#444] transition">
+                    <h4 class="text-white font-semibold mb-3">Business License</h4>
                     {% if vendor.license_image %}
-                        <img src="{{ vendor.license_image.url }}" alt="Business License" class="w-full h-40 object-cover rounded mb-3 cursor-pointer hover:opacity-80 transition" onclick="openModal('{{ vendor.license_image.url }}')">
-                        <a href="{{ vendor.license_image.url }}" target="_blank" class="inline-block px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded transition">View Full Size</a>
+                        <img src="{{ vendor.license_image.url }}" alt="Business License" class="w-full h-40 object-cover mb-3 cursor-pointer hover:opacity-80 transition" onclick="openModal('{{ vendor.license_image.url }}')">
+                        <a href="{{ vendor.license_image.url }}" target="_blank" class="inline-block px-3 py-2 bg-white text-[#0a0a0a] text-xs font-semibold hover:bg-[#e0e0e0] transition">View Full Size</a>
                     {% else %}
-                        <p class="text-slate-400">No document uploaded</p>
+                        <p class="text-[#555]">No document uploaded</p>
                     {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Admin Actions -->
-        <div class="bg-slate-800/50 border border-purple-500/30 rounded-lg p-6">
-            <h3 class="text-xl font-bold text-purple-300 mb-6"><i class="fas fa-bolt text-purple-400 mr-2"></i>Admin Actions</h3>
+        <div class="bg-[#141414] border border-[#222] p-6">
+            <h3 class="text-xl font-bold text-white mb-6"><i class="fas fa-bolt text-[#555] mr-2"></i>Admin Actions</h3>
             <div class="flex flex-wrap gap-3 mb-6">
                 {% if vendor.status == 'pending' %}
                     <form method="POST" action="{% url 'approve_vendor' vendor.id %}" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition transform hover:scale-105" onclick="return confirm('Approve this vendor?')">
-                            ✅ Approve Vendor
+                        <button type="submit" class="px-6 py-3 bg-white text-[#0a0a0a] font-bold hover:bg-[#e0e0e0] transition" onclick="return confirm('Approve this vendor?')">
+                            <i class="fas fa-check-circle mr-2"></i>Approve Vendor
                         </button>
                     </form>
-                    <button type="button" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition transform hover:scale-105" onclick="toggleRejectForm()">
-                        ❌ Reject Vendor
+                    <button type="button" class="px-6 py-3 bg-[#1a1a1a] border border-[#222] text-[#888] font-bold hover:border-[#444] hover:text-white transition" onclick="toggleRejectForm()">
+                        <i class="fas fa-times-circle mr-2"></i>Reject Vendor
                     </button>
                 {% elif vendor.status == 'approved' %}
                     <form method="POST" action="{% url 'suspend_vendor' vendor.id %}" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-lg transition transform hover:scale-105" onclick="return confirm('Suspend this vendor?')">
+                        <button type="submit" class="px-6 py-3 bg-[#1a1a1a] border border-[#222] text-[#888] font-bold hover:border-[#444] hover:text-white transition" onclick="return confirm('Suspend this vendor?')">
                             <i class="fas fa-ban mr-2"></i>Suspend Vendor
                         </button>
                     </form>
                 {% elif vendor.status == 'suspended' %}
                     <form method="POST" action="{% url 'activate_vendor' vendor.id %}" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition transform hover:scale-105" onclick="return confirm('Reactivate this vendor?')">
-                            ✅ Activate Vendor
+                        <button type="submit" class="px-6 py-3 bg-white text-[#0a0a0a] font-bold hover:bg-[#e0e0e0] transition" onclick="return confirm('Reactivate this vendor?')">
+                            <i class="fas fa-check-circle mr-2"></i>Activate Vendor
                         </button>
                     </form>
                 {% elif vendor.status == 'rejected' %}
                     <form method="POST" action="{% url 'approve_vendor' vendor.id %}" class="inline">
                         {% csrf_token %}
-                        <button type="submit" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition transform hover:scale-105" onclick="return confirm('Override rejection and approve?')">
-                            ✅ Approve Vendor
+                        <button type="submit" class="px-6 py-3 bg-white text-[#0a0a0a] font-bold hover:bg-[#e0e0e0] transition" onclick="return confirm('Override rejection and approve?')">
+                            <i class="fas fa-check-circle mr-2"></i>Approve Vendor
                         </button>
                     </form>
                 {% endif %}
             </div>
 
             <!-- Rejection Form -->
-            <div id="rejectionForm" class="hidden bg-red-500/10 border border-red-500/30 rounded-lg p-6">
+            <div id="rejectionForm" class="hidden bg-[#1a1a1a] border border-[#222] p-6 mt-4">
                 <form method="POST" action="{% url 'reject_vendor' vendor.id %}" class="space-y-4">
                     {% csrf_token %}
-                    <label class="block text-red-300 font-bold text-sm uppercase tracking-wide">Reason for Rejection:</label>
+                    <label class="block text-white font-bold text-sm uppercase tracking-wide">Reason for Rejection:</label>
                     <textarea name="rejection_reason" required placeholder="Enter the reason for rejecting this vendor application..."
-                        class="w-full px-4 py-3 bg-slate-700/50 border border-red-500/30 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-red-500 focus:bg-slate-700 transition h-24"></textarea>
+                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition h-24"></textarea>
                     <div class="flex gap-3">
-                        <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition">Submit Rejection</button>
-                        <button type="button" class="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-lg transition" onclick="toggleRejectForm()">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-white text-[#0a0a0a] font-bold hover:bg-[#e0e0e0] transition">Submit Rejection</button>
+                        <button type="button" class="px-6 py-2 bg-[#141414] border border-[#222] text-[#888] font-bold hover:border-[#444] hover:text-white transition" onclick="toggleRejectForm()">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -255,23 +250,18 @@
 
     <!-- Image Modal -->
     <div id="imageModal" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4" onclick="closeModal()">
-        <span class="absolute top-4 right-6 text-white text-4xl font-bold cursor-pointer hover:text-gray-300" onclick="closeModal()">&times;</span>
-        <img class="modal-content max-w-4xl max-h-[80vh] rounded-lg" id="modalImage">
+        <span class="absolute top-4 right-6 text-white text-4xl font-bold cursor-pointer hover:text-[#888]" onclick="closeModal()">&times;</span>
+        <img class="modal-content max-w-4xl max-h-[80vh]" id="modalImage">
     </div>
 
     <script>
         function toggleRejectForm() {
-            const form = document.getElementById('rejectionForm');
-            form.classList.toggle('hidden');
+            document.getElementById('rejectionForm').classList.toggle('hidden');
         }
-
         function openModal(imageSrc) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modal.classList.remove('hidden');
-            modalImg.src = imageSrc;
+            document.getElementById('imageModal').classList.remove('hidden');
+            document.getElementById('modalImage').src = imageSrc;
         }
-
         function closeModal() {
             document.getElementById('imageModal').classList.add('hidden');
         }

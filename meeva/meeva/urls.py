@@ -6,6 +6,7 @@ urlpatterns = [
     path('', include('pages.urls')),  # Include URLs from the pages app
     path('meevaadmin/', include('admin.urls')),  # Custom admin panel
     path('vendor/', include('vendor.urls')),  # Vendor panel
+    path('user/', include('users.urls')),  # User panel
 ]
 
 # Serve media files in development

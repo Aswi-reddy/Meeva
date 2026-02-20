@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - Vendor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Clash Display', sans-serif; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        .fade-up { animation: fadeUp .5s ease-out both; }
+    </style>
+</head>
+<body class="bg-[#0a0a0a] min-h-screen text-white">
+    <!-- Navbar -->
+    <nav class="bg-[#0a0a0a] border-b border-[#222] px-6 py-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-white"><i class="fas fa-store mr-2"></i>{{ vendor.business_name }}</h1>
+        <a href="{% url 'vendor_logout' %}" class="px-4 py-2 bg-white text-[#0a0a0a] font-semibold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">Logout</a>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-2xl mx-auto px-6 py-8 fade-up">
+        <!-- Header -->
+        <div class="mb-6">
+            <a href="{% url 'vendor_products' %}" class="text-[#888] hover:text-white mb-4 inline-block font-medium transition">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Products
+            </a>
+            <h2 class="text-3xl font-bold text-white">Add New Product</h2>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for message in messages %}
+                    <div class="p-3 bg-[#141414] border border-[#222] text-[#ccc] text-sm font-medium">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Form -->
+        <div class="bg-[#141414] border border-[#222] p-6">
+            <form method="POST" enctype="multipart/form-data" class="space-y-5">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Product Name</label>
+                    <input type="text" name="name" required placeholder="Enter product name"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
+                </div>
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Description</label>
+                    <textarea name="description" required placeholder="Enter product description" rows="4"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"></textarea>
+                </div>
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Category</label>
+                    <select name="category" required
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white focus:outline-none focus:border-[#444] transition">
+                        {% for value, label in categories %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Available Sizes</label>
+                    <input type="text" name="sizes" placeholder="e.g. S, M, L, XL or 6, 7, 8, 9, 10"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
+                    <p class="text-[#555] text-xs mt-2">Comma-separated sizes. Leave empty if not applicable.</p>
+                </div>
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Price (₹)</label>
+                    <input type="number" name="price" required step="0.01" placeholder="Enter price"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
+                </div>
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Quantity</label>
+                    <input type="number" name="quantity" required placeholder="Enter quantity"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
+                </div>
+                <div>
+                    <label class="block text-white font-semibold text-sm uppercase tracking-wide mb-2">Product Image (Optional)</label>
+                    <input type="file" name="image" accept="image/*"
+                        class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-[#888] text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-white file:text-[#0a0a0a] hover:file:bg-[#e0e0e0] transition">
+                    <p class="text-[#555] text-xs mt-2">Supported formats: JPG, PNG, GIF (Max 5MB)</p>
+                </div>
+                <button type="submit" class="w-full py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">
+                    <i class="fas fa-check mr-2"></i>Add Product
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
