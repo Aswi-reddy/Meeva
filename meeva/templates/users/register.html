@@ -50,13 +50,15 @@
                 </div>
                 <div>
                     <label class="block text-white font-semibold text-sm mb-2">Password</label>
-                    <input type="password" name="password" required placeholder="Enter password (min 6 chars)"
+                    <input type="password" id="password" name="password" required
                         class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
+                    <div id="strength-meter" class="mt-2 text-xs"></div>
                 </div>
                 <div>
                     <label class="block text-white font-semibold text-sm mb-2">Confirm Password</label>
-                    <input type="password" name="confirm_password" required placeholder="Confirm your password"
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password"
                         class="w-full px-4 py-3 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition">
+                    <div id="match-meter" class="mt-2 text-xs"></div>
                 </div>
                 <button type="submit" class="w-full py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition mt-2">
                     <i class="fas fa-user-plus mr-2"></i>Create Account
@@ -74,5 +76,66 @@
             </div>
         </div>
     </div>
+    <script>
+        const pwd = document.getElementById('password');
+        const confirm_pwd = document.getElementById('confirm_password');
+        const strengthMeter = document.getElementById('strength-meter');
+        const matchMeter = document.getElementById('match-meter');
+
+        const passwordCriteria = [
+            { regex: /.{6,}/, message: '6+ characters' },
+            { regex: /[A-Z]/, message: '1 uppercase' },
+            { regex: /[a-z]/, message: '1 lowercase' },
+            { regex: /\d/, message: '1 digit' },
+            { regex: /[\W_]/, message: '1 symbol' }
+        ];
+
+        function validatePassword() {
+            const password = pwd.value;
+            let valid = true;
+            let strengthHTML = '';
+
+            passwordCriteria.forEach(criterion => {
+                if (criterion.regex.test(password)) {
+                    strengthHTML += `<span class="text-green-500 text-xs mr-2"><i class="fas fa-check-circle mr-1"></i>${criterion.message}</span>`;
+                } else {
+                    strengthHTML += `<span class="text-red-500 text-xs mr-2"><i class="fas fa-times-circle mr-1"></i>${criterion.message}</span>`;
+                    valid = false;
+                }
+            });
+
+            strengthMeter.innerHTML = strengthHTML;
+            return valid;
+        }
+
+        pwd?.addEventListener('input', validatePassword);
+
+        confirm_pwd?.addEventListener('input', function() {
+            const match = this.value === pwd.value;
+            if (this.value) {
+                matchMeter.innerHTML = match 
+                    ? '<span class="text-green-500 text-xs"><i class="fas fa-check-circle mr-1"></i>Passwords match</span>' 
+                    : '<span class="text-red-500 text-xs"><i class="fas fa-times-circle mr-1"></i>Passwords don\'t match</span>';
+            } else {
+                matchMeter.innerHTML = '';
+            }
+        });
+
+        document.querySelector('form')?.addEventListener('submit', function(e) {
+            const isPasswordValid = validatePassword();
+            const doPasswordsMatch = pwd.value === confirm_pwd.value;
+
+            if (!isPasswordValid || !doPasswordsMatch) {
+                e.preventDefault();
+                if (!doPasswordsMatch) {
+                    confirm_pwd.focus();
+                    alert('Passwords do not match!');
+                } else {
+                    pwd.focus();
+                    alert('Password does not meet all the requirements.');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

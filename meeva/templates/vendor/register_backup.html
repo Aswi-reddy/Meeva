@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Registration - Meeva</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a1a3a 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.2) 0%, transparent 70%);
+            top: -250px;
+            right: -250px;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(107, 70, 193, 0.2) 0%, transparent 70%);
+            bottom: -200px;
+            left: -200px;
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .wizard-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 1;
+        }
+
+        /* Header with Logo */
+        .wizard-header {
+            padding: 30px 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(17, 17, 17, 0.4);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(147, 51, 234, 0.2);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.4);
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            color: #e9d5ff;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo-text p {
+            font-size: 13px;
+            color: #a78bfa;
+            margin-top: 2px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            padding: 40px 50px 0;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(147, 51, 234, 0.2);
+            z-index: 0;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #9333ea 0%, #c084fc 100%);
+            z-index: 1;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-bar[data-progress="0"]::after { width: 0%; }
+        .progress-bar[data-progress="1"]::after { width: 25%; }
+        .progress-bar[data-progress="2"]::after { width: 50%; }
+        .progress-bar[data-progress="3"]::after { width: 75%; }
+        .progress-bar[data-progress="4"]::after { width: 100%; }
+
+        .progress-step {
+            width: 50px;
+            height: 50px;
+            background: rgba(17, 17, 17, 0.8);
+            border: 3px solid rgba(147, 51, 234, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #666;
+            position: relative;
+            z-index: 2;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .progress-step.active {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border-color: #c084fc;
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.5);
+        }
+
+        .progress-step.completed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #6ee7b7;
+            color: white;
+        }
+
+        .progress-step span {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #a78bfa;
+            white-space: nowrap;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Content Area */
+        .wizard-content {
+            flex: 1;
+            padding: 20px 50px 50px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .steps-wrapper {
+            width: 100%;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .step {
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .step.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .step.prev {
+            transform: translateX(-100%);
+        }
+
+        .step-content {
+            background: rgba(17, 17, 17, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 50px;
+            border: 1px solid rgba(147, 51, 234, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .step-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .step-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .step-title {
+            font-size: 32px;
+            color: #e9d5ff;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .step-description {
+            font-size: 16px;
+            color: #a78bfa;
+            line-height: 1.6;
+        }
+
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: #c084fc;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label i {
+            color: #9333ea;
+            font-size: 16px;
+        }
+
+        .form-group label span {
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9333ea;
+            font-size: 18px;
+            z-index: 1;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 18px 20px 18px 50px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid rgba(147, 51, 234, 0.3);
+            border-radius: 14px;
+            font-size: 15px;
+            color: #e9d5ff;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input[type="file"] {
+            padding: 18px 20px;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            padding-left: 20px !important;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(168, 85, 247, 0.4);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #9333ea;
+            background: rgba(10, 10, 10, 1);
+            box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.1), 0 10px 30px rgba(147, 51, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Info Box */
+        .info-box {
+            background: linear-gradient(135deg, rgba(29, 78, 216, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+            border-left: 4px solid #9333ea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .info-box i {
+            color: #9333ea;
+            font-size: 20px;
+            margin-top: 2px;
+        }
+
+        .info-box-content p {
+            color: #c084fc;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .info-box-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-box-content strong {
+            color: #e9d5ff;
+        }
+
+        /* Buttons */
+        .wizard-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 16px 35px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-prev {
+            background: rgba(147, 51, 234, 0.1);
+            color: #c084fc;
+            border: 2px solid rgba(147, 51, 234, 0.3);
+        }
+
+        .btn-prev:hover {
+            background: rgba(147, 51, 234, 0.2);
+            border-color: #9333ea;
+            transform: translateX(-5px);
+        }
+
+        .btn-next, .btn-submit {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+            margin-left: auto;
+        }
+
+        .btn-next:hover, .btn-submit:hover {
+            transform: translateX(5px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Messages */
+        .messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(20px);
+            border: 1px solid;
+            animation: slideIn 0.4s ease-out;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border-color: #10b981;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border-color: #ef4444;
+        }
+
+        /* Footer Link */
+        .wizard-footer {
+            padding: 20px 50px 30px;
+            text-align: center;
+            color: #a78bfa;
+            font-size: 15px;
+        }
+
+        .wizard-footer a {
+            color: #c084fc;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .wizard-footer a:hover {
+            color: #e9d5ff;
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        /* Password Strength */
+        .password-strength {
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .strength-weak {
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .strength-medium {
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .strength-strong {
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .password-match {
+            border-color: #10b981 !important;
+        }
+
+        .password-mismatch {
+            border-color: #ef4444 !important;
+        }
+
+        #password-error {
+            color: #fca5a5;
+            font-size: 14px;
+            margin-top: 12px;
+            padding: 12px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #ef4444;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .wizard-header {
+                padding: 20px;
+            }
+
+            .wizard-content {
+                padding: 20px;
+            }
+
+            .step-content {
+                padding: 30px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-container {
+                padding: 20px 20px 0;
+            }
+
+            .progress-bar {
+                display: none;
+            }
+
+            .wizard-footer {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(147, 51, 234, 0.15);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            padding: 50px 40px;
+            text-align: center;
+            border-bottom: 2px solid rgba(147, 51, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zm20.97 0l9.315 9.314-1.414 1.414L34.828 0h2.83zM22.344 0L13.03 9.314l1.414 1.414L25.172 0h-2.83zM32 0l12.142 12.142-1.414 1.414L30 .828 17.272 13.556 15.858 12.14 28 0zm0 3.657l10.485 10.485-1.414 1.414L32 6.485 22.929 15.556l-1.414-1.414L32 3.657z' fill='%239333ea' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .logo {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+            font-weight: 800;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+            color: #e9d5ff;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-container {
+            padding: 50px;
+        }
+
+        .messages {
+            margin-bottom: 25px;
+        }
+
+        .alert {
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+            backdrop-filter: blur(10px);
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            border-color: #10b981;
+        }
+
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border-color: #ef4444;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 40px 0 30px 0;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(147, 51, 234, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            font-size: 26px;
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(147, 51, 234, 0.3));
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: #c084fc;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group label i {
+            color: #9333ea;
+            font-size: 14px;
+        }
+
+        .form-group label span {
+            color: #ef4444;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9333ea;
+            font-size: 16px;
+            z-index: 1;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 16px 16px 16px 45px;
+            background: rgba(17, 17, 17, 0.8);
+            border: 1.5px solid rgba(147, 51, 234, 0.3);
+            border-radius: 12px;
+            font-size: 14px;
+            color: #e9d5ff;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .form-group input[type="file"] {
+            padding: 16px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(168, 85, 247, 0.4);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            padding-left: 16px !important;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #9333ea;
+            background: rgba(17, 17, 17, 1);
+            box-shadow: 0 0 20px rgba(147, 51, 234, 0.2), 0 0 0 4px rgba(147, 51, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .submit-btn i {
+            font-size: 20px;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(147, 51, 234, 0.2);
+            color: #a78bfa;
+            font-size: 15px;
+        }
+
+        .login-link a {
+            color: #c084fc;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .login-link a:hover {
+            color: #e9d5ff;
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(107, 70, 193, 0.1) 100%);
+            border-left: 4px solid #9333ea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.1);
+        }
+
+        .info-box p {
+            margin: 0;
+            color: #c084fc;
+            font-size: 14px;
+            line-height: 1.8;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .info-box p i {
+            color: #9333ea;
+            margin-top: 3px;
+            font-size: 16px;
+        }
+
+        .info-box strong {
+            color: #e9d5ff;
+        }
+
+        .password-match {
+            border-color: #10b981 !important;
+        }
+
+        .password-mismatch {
+            border-color: #ef4444 !important;
+        }
+
+        .password-strength {
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .password-strength i {
+            font-size: 14px;
+        }
+
+        .strength-weak {
+            color: #ef4444;
+        }
+
+        .strength-medium {
+            color: #f59e0b;
+        }
+
+        .strength-strong {
+            color: #10b981;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-container {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+            </div>
+            <h1>Become a Meeva Vendor</h1>
+            <p>Join thousands of sellers and grow your business</p>
+        </div>
+
+        <div class="form-container">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="info-box">
+                <p><i class="fas fa-info-circle"></i><span><strong>Note:</strong> Your registration will be reviewed by our admin team. You'll be able to login once approved (usually within 24-48 hours).</span></p>
+                <p style="margin-top: 10px;"><i class="fas fa-shield-alt"></i><span><strong>Important:</strong> Remember your email and password - you'll need them to login after approval!</span></p>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="section-title"><i class="fas fa-user-circle"></i> Personal Information</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="full_name"><i class="fas fa-user"></i> Full Name <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-user"></i></span>
+                            <input type="text" id="full_name" name="full_name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone"><i class="fas fa-phone"></i> Phone Number <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-phone"></i></span>
+                            <input type="tel" id="phone" name="phone" required placeholder="+919876543210">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email Address <span>*</span></label>
+                    <div class="input-wrapper">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> Password <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="password" name="password" required minlength="6" placeholder="Minimum 6 characters">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password"><i class="fas fa-lock"></i> Confirm Password <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                            <input type="password" id="confirm_password" name="confirm_password" required minlength="6" placeholder="Re-enter your password">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="password-error" style="color: #fca5a5; font-size: 14px; margin-top: 8px; display: none; padding: 12px; background-color: rgba(239, 68, 68, 0.1); border-radius: 10px; border-left: 4px solid #ef4444;">
+                    <i class="fas fa-exclamation-triangle"></i> Passwords do not match!
+                </div>
+
+                <div class="section-title"><i class="fas fa-building"></i> Business Information</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="business_name"><i class="fas fa-store"></i> Business Name <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-store"></i></span>
+                            <input type="text" id="business_name" name="business_name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="license_number"><i class="fas fa-id-card"></i> Business License Number <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-id-card"></i></span>
+                            <input type="text" id="license_number" name="license_number" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="business_address"><i class="fas fa-map-marker-alt"></i> Business Address <span>*</span></label>
+                    <textarea id="business_address" name="business_address" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="business_description"><i class="fas fa-align-left"></i> Business Description (Optional)</label>
+                    <textarea id="business_description" name="business_description"></textarea>
+                </div>
+
+                <div class="section-title"><i class="fas fa-file-alt"></i> KYC Documents</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="aadhar_number"><i class="fas fa-id-badge"></i> Aadhar Number <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-id-badge"></i></span>
+                            <input type="text" id="aadhar_number" name="aadhar_number" required pattern="\d{12}" placeholder="123456789012">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pan_number"><i class="fas fa-id-card-alt"></i> PAN Number <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-id-card-alt"></i></span>
+                            <input type="text" id="pan_number" name="pan_number" required pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" placeholder="ABCDE1234F" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="aadhar_image"><i class="fas fa-image"></i> Aadhar Card Image <span>*</span></label>
+                        <input type="file" id="aadhar_image" name="aadhar_image" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pan_image"><i class="fas fa-image"></i> PAN Card Image <span>*</span></label>
+                        <input type="file" id="pan_image" name="pan_image" accept="image/*" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="license_image"><i class="fas fa-file-image"></i> Business License Image <span>*</span></label>
+                    <input type="file" id="license_image" name="license_image" accept="image/*" required>
+                </div>
+
+                <div class="section-title"><i class="fas fa-university"></i> Bank Details</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bank_name"><i class="fas fa-university"></i> Bank Name <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-university"></i></span>
+                            <input type="text" id="bank_name" name="bank_name" required placeholder="State Bank of India">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="account_holder_name"><i class="fas fa-user-tie"></i> Account Holder Name <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-user-tie"></i></span>
+                            <input type="text" id="account_holder_name" name="account_holder_name" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="account_number"><i class="fas fa-hashtag"></i> Account Number <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-hashtag"></i></span>
+                            <input type="text" id="account_number" name="account_number" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ifsc_code"><i class="fas fa-code"></i> IFSC Code <span>*</span></label>
+                        <div class="input-wrapper">
+                            <span class="input-icon"><i class="fas fa-code"></i></span>
+                            <input type="text" id="ifsc_code" name="ifsc_code" required pattern="[A-Z]{4}0[A-Z0-9]{6}" placeholder="SBIN0001234" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Submit Registration</button>
+
+                <div class="login-link">
+                    Already registered? <a href="{% url 'vendor_login' %}">Login here</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Auto-uppercase for PAN and IFSC
+        document.getElementById('pan_number').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+        document.getElementById('ifsc_code').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Password validation
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm_password');
+        const passwordError = document.getElementById('password-error');
+        const form = document.querySelector('form');
+
+        // Password strength indicator
+        function checkPasswordStrength(pwd) {
+            let strength = 0;
+            if (pwd.length >= 6) strength++;
+            if (pwd.length >= 8) strength++;
+            if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength++;
+            if (/\d/.test(pwd)) strength++;
+            if (/[^a-zA-Z0-9]/.test(pwd)) strength++;
+            return strength;
+        }
+
+        password.addEventListener('input', function() {
+            const strength = checkPasswordStrength(this.value);
+            let message = '';
+            let colorClass = '';
+            
+            if (this.value.length === 0) {
+                message = '';
+            } else if (this.value.length < 6) {
+                message = '<i class="fas fa-exclamation-circle"></i> Password too short (minimum 6 characters)';
+                colorClass = 'strength-weak';
+            } else if (strength <= 2) {
+                message = '<i class="fas fa-times-circle"></i> Weak password';
+                colorClass = 'strength-weak';
+            } else if (strength <= 3) {
+                message = '<i class="fas fa-check-circle"></i> Medium password';
+                colorClass = 'strength-medium';
+            } else {
+                message = '<i class="fas fa-check-circle"></i> Strong password';
+                colorClass = 'strength-strong';
+            }
+            
+            // Remove existing strength indicator
+            const existingIndicator = password.parentElement.querySelector('.password-strength');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Add new strength indicator
+            if (message) {
+                const indicator = document.createElement('div');
+                indicator.className = 'password-strength ' + colorClass;
+                indicator.innerHTML = message;
+                password.parentElement.appendChild(indicator);
+            }
+            
+            validatePasswords();
+        });
+
+        function validatePasswords() {
+            if (confirmPassword.value && password.value !== confirmPassword.value) {
+                passwordError.style.display = 'block';
+                confirmPassword.classList.add('password-mismatch');
+                confirmPassword.classList.remove('password-match');
+                return false;
+            } else if (confirmPassword.value && password.value === confirmPassword.value) {
+                passwordError.style.display = 'none';
+                confirmPassword.classList.add('password-match');
+                confirmPassword.classList.remove('password-mismatch');
+                
+                // Show success message
+                const existingSuccess = confirmPassword.parentElement.querySelector('.password-success');
+                if (!existingSuccess) {
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'password-strength strength-strong password-success';
+                    successMsg.innerHTML = '<i class="fas fa-check-circle"></i> Passwords match!';
+                    confirmPassword.parentElement.appendChild(successMsg);
+                }
+                return true;
+            } else {
+                passwordError.style.display = 'none';
+                confirmPassword.classList.remove('password-mismatch', 'password-match');
+                const successMsg = confirmPassword.parentElement.querySelector('.password-success');
+                if (successMsg) successMsg.remove();
+                return true;
+            }
+        }
+
+        // Real-time validation
+        confirmPassword.addEventListener('input', validatePasswords);
+
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            if (password.value.length < 6) {
+                e.preventDefault();
+                password.focus();
+                alert('Password must be at least 6 characters long!');
+                return false;
+            }
+            
+            if (!validatePasswords() || password.value !== confirmPassword.value) {
+                e.preventDefault();
+                confirmPassword.focus();
+                alert('Passwords do not match! Please make sure both passwords are identical.');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

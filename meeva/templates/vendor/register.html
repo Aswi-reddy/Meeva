@@ -19,7 +19,7 @@
         <div class="text-center mb-12">
             <h1 class="text-3xl font-bold text-white mb-2">MEEVA VENDOR PORTAL</h1>
             <p class="text-white text-lg mb-1">Join Our Marketplace</p>
-            <p class="text-[#888] text-sm">Register your business in 5 minutes</p>
+             
         </div>
 
         <!-- Info Alert -->
@@ -225,30 +225,62 @@
         document.getElementById('ifsc_code')?.addEventListener('input', e => e.target.value = e.target.value.toUpperCase());
 
         const pwd = document.getElementById('password');
-        pwd?.addEventListener('input', function() {
-            const len = this.value.length;
-            let score = len >= 6 ? 1 : 0;
-            if (/[A-Z]/.test(this.value) && /[a-z]/.test(this.value)) score++;
-            if (/\d/.test(this.value)) score++;
-            const labels = ['WEAK', 'WEAK', 'MEDIUM', 'STRONG', 'STRONG'];
-            const meter = document.getElementById('strength-meter');
-            meter.innerHTML = len > 0 ? `<span class="text-[#888]"><i class="fas fa-lock mr-1"></i>${labels[score]}</span>` : '';
-        });
-
         const confirm_pwd = document.getElementById('confirm_password');
+        const strengthMeter = document.getElementById('strength-meter');
+        const matchMeter = document.getElementById('match-meter');
+
+        const passwordCriteria = [
+            { regex: /.{6,}/, message: '6+ characters' },
+            { regex: /[A-Z]/, message: '1 uppercase' },
+            { regex: /[a-z]/, message: '1 lowercase' },
+            { regex: /\d/, message: '1 digit' },
+            { regex: /[\W_]/, message: '1 symbol' }
+        ];
+
+        function validatePassword() {
+            const password = pwd.value;
+            let valid = true;
+            let strengthHTML = '';
+
+            passwordCriteria.forEach(criterion => {
+                if (criterion.regex.test(password)) {
+                    strengthHTML += `<span class="text-green-500 text-xs mr-2"><i class="fas fa-check-circle mr-1"></i>${criterion.message}</span>`;
+                } else {
+                    strengthHTML += `<span class="text-red-500 text-xs mr-2"><i class="fas fa-times-circle mr-1"></i>${criterion.message}</span>`;
+                    valid = false;
+                }
+            });
+
+            strengthMeter.innerHTML = strengthHTML;
+            return valid;
+        }
+
+        pwd?.addEventListener('input', validatePassword);
+
         confirm_pwd?.addEventListener('input', function() {
             const match = this.value === pwd.value;
-            const meter = document.getElementById('match-meter');
             if (this.value) {
-                meter.innerHTML = match ? '<span class="text-[#888]"><i class="fas fa-check mr-1"></i>Passwords match</span>' : '<span class="text-[#888]"><i class="fas fa-times mr-1"></i>Passwords don\'t match</span>';
+                matchMeter.innerHTML = match 
+                    ? '<span class="text-green-500 text-xs"><i class="fas fa-check-circle mr-1"></i>Passwords match</span>' 
+                    : '<span class="text-red-500 text-xs"><i class="fas fa-times-circle mr-1"></i>Passwords don\'t match</span>';
+            } else {
+                matchMeter.innerHTML = '';
             }
         });
 
         document.querySelector('form')?.addEventListener('submit', function(e) {
-            if (pwd.value !== confirm_pwd.value) {
+            const isPasswordValid = validatePassword();
+            const doPasswordsMatch = pwd.value === confirm_pwd.value;
+
+            if (!isPasswordValid || !doPasswordsMatch) {
                 e.preventDefault();
-                confirm_pwd.focus();
-                alert('Passwords do not match!');
+                if (!doPasswordsMatch) {
+                    confirm_pwd.focus();
+                    alert('Passwords do not match!');
+                } else {
+                    pwd.focus();
+                    alert('Password does not meet all the requirements.');
+                }
             }
         });
     </script>
