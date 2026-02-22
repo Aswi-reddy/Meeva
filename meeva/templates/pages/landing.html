@@ -1,352 +1,598 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Meeva - Commerce Reimagined</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body { font-family: 'Clash Display', sans-serif; margin: 0; }
+      body {
+        font-family: "Clash Display", sans-serif;
+        margin: 0;
+      }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(40px);
         }
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.85); }
-            to { opacity: 1; transform: scale(1); }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        @keyframes slideLeft {
-            from { opacity: 0; transform: translateX(60px); }
-            to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.85);
         }
-        @keyframes slideRight {
-            from { opacity: 0; transform: translateX(-60px); }
-            to { opacity: 1; transform: translateX(0); }
+        to {
+          opacity: 1;
+          transform: scale(1);
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
+      }
+      @keyframes slideLeft {
+        from {
+          opacity: 0;
+          transform: translateX(60px);
         }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes slideRight {
+        from {
+          opacity: 0;
+          transform: translateX(-60px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
 
-        .fade-up { animation: fadeUp 0.8s ease-out both; }
-        .fade-up-d1 { animation-delay: 0.15s; }
-        .fade-up-d2 { animation-delay: 0.3s; }
-        .fade-up-d3 { animation-delay: 0.45s; }
-        .scale-in { animation: scaleIn 0.6s ease-out both; }
-        .slide-left { animation: slideLeft 0.8s ease-out both; animation-delay: 0.4s; }
-        .slide-right { animation: slideRight 0.8s ease-out both; animation-delay: 0.5s; }
-        .float-anim { animation: float 4s ease-in-out infinite; }
-        .float-anim-d1 { animation-delay: 0.5s; }
-        .float-anim-d2 { animation-delay: 1s; }
-        .float-anim-d3 { animation-delay: 1.5s; }
+      .fade-up {
+        animation: fadeUp 0.8s ease-out both;
+      }
+      .fade-up-d1 {
+        animation-delay: 0.15s;
+      }
+      .fade-up-d2 {
+        animation-delay: 0.3s;
+      }
+      .fade-up-d3 {
+        animation-delay: 0.45s;
+      }
+      .scale-in {
+        animation: scaleIn 0.6s ease-out both;
+      }
+      .slide-left {
+        animation: slideLeft 0.8s ease-out both;
+        animation-delay: 0.4s;
+      }
+      .slide-right {
+        animation: slideRight 0.8s ease-out both;
+        animation-delay: 0.5s;
+      }
+      .float-anim {
+        animation: float 4s ease-in-out infinite;
+      }
+      .float-anim-d1 {
+        animation-delay: 0.5s;
+      }
+      .float-anim-d2 {
+        animation-delay: 1s;
+      }
+      .float-anim-d3 {
+        animation-delay: 1.5s;
+      }
 
-        .hero-bg {
-            background: #4318FF;
-            position: relative;
-            overflow: hidden;
-        }
-        .hero-bg::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 50%, rgba(100, 60, 255, 0.4) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 30%, rgba(0, 120, 255, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 50% 80%, rgba(130, 80, 255, 0.2) 0%, transparent 50%);
-            animation: float 8s ease-in-out infinite;
-        }
+      .hero-bg {
+        background: #4318ff;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero-bg::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background:
+          radial-gradient(
+            circle at 30% 50%,
+            rgba(100, 60, 255, 0.4) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 70% 30%,
+            rgba(0, 120, 255, 0.3) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 50% 80%,
+            rgba(130, 80, 255, 0.2) 0%,
+            transparent 50%
+          );
+        animation: float 8s ease-in-out infinite;
+      }
 
-        .hero-title {
-            font-size: clamp(4rem, 12vw, 11rem);
-            font-weight: 700;
-            line-height: 0.9;
-            letter-spacing: -0.03em;
-            color: white;
-            text-align: center;
-            position: relative;
-            z-index: 10;
-        }
+      .hero-title {
+        font-size: clamp(4rem, 12vw, 11rem);
+        font-weight: 700;
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+        color: white;
+        text-align: center;
+        position: relative;
+        z-index: 10;
+      }
 
-        .product-card:hover .product-img {
-            transform: scale(1.06);
-        }
+      .product-card:hover .product-img {
+        transform: scale(1.06);
+      }
     </style>
-</head>
-<body class="bg-[#0a0a0a]">
-
+  </head>
+  <body class="bg-[#0a0a0a]">
     <!-- NAVBAR -->
-    <nav class="fixed w-full top-0 z-50 px-8 py-5 flex justify-between items-center" style="background: rgba(67, 24, 255, 0.95); backdrop-filter: blur(10px);">
-        <a href="/" class="text-xl font-bold tracking-wide text-white hover:opacity-70 transition">MEEVA</a>
-        <div class="flex gap-6 items-center">
-            <a href="#products" class="text-white/70 hover:text-white text-sm font-semibold tracking-wide uppercase transition">Products</a>
-            {% if is_user_logged_in %}
-                <a href="{% url 'my_orders' %}" class="text-white/70 hover:text-white text-sm font-semibold tracking-wide uppercase transition">My Orders</a>
-                <a href="{% url 'view_cart' %}" class="relative text-white/70 hover:text-white transition">
-                    <i class="fas fa-shopping-cart text-lg"></i>
-                    {% if cart_count > 0 %}
-                        <span class="absolute -top-2 -right-3 bg-white text-[#4318FF] text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">{{ cart_count }}</span>
-                    {% endif %}
-                </a>
-                <a href="{% url 'user_logout' %}" class="text-white/70 hover:text-white text-sm font-semibold tracking-wide uppercase transition">Logout</a>
-            {% else %}
-                <a href="{% url 'role_login' %}" class="text-white/70 hover:text-white text-sm font-semibold tracking-wide uppercase transition">Login</a>
-                <a href="{% url 'role_login' %}" class="text-white/70 hover:text-white text-sm font-semibold tracking-wide uppercase transition">Register</a>
-            {% endif %}
-        </div>
+    <nav
+      class="fixed w-full top-0 z-50 px-8 py-5 flex justify-between items-center"
+      style="background: rgba(67, 24, 255, 0.95); backdrop-filter: blur(10px)"
+    >
+      <a
+        href="/"
+        class="text-xl font-bold tracking-wide text-white hover:opacity-70 transition"
+        >MEEVA</a
+      >
+      <div class="flex gap-6 items-center">
+        <a
+          href="#products"
+          class="text-white/70 hover:text-white text-sm font-semibold tracking-wide uppercase transition"
+          >Products</a
+        >
+        <a
+          href="{% url 'role_login' %}"
+          class="px-5 py-2 bg-white text-[#0a0a0a] text-sm font-bold tracking-wide uppercase hover:bg-[#e0e0e0] transition"
+          >Get Started</a
+        >
+      </div>
     </nav>
 
     <!-- HERO SECTION -->
-    <section class="hero-bg min-h-screen flex flex-col items-center justify-center px-6 pt-20 pb-16 relative">
-        <!-- Floating decorative elements -->
-        <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <div class="absolute top-[15%] left-[8%] w-16 h-16 bg-white/10 rounded-2xl rotate-12 float-anim"></div>
-            <div class="absolute top-[20%] right-[10%] w-20 h-20 bg-white/5 rounded-full float-anim-d1"></div>
-            <div class="absolute bottom-[25%] left-[15%] w-12 h-12 bg-white/8 rounded-lg rotate-45 float-anim-d2"></div>
-            <div class="absolute bottom-[30%] right-[12%] w-14 h-14 bg-white/5 rounded-2xl -rotate-12 float-anim-d3"></div>
-            <div class="absolute top-[40%] left-[3%] w-8 h-8 bg-white/10 rounded-full float-anim-d1"></div>
-            <div class="absolute top-[35%] right-[5%] w-10 h-10 bg-white/8 rounded-lg rotate-30 float-anim-d2"></div>
+    <section
+      class="hero-bg min-h-screen flex flex-col items-center justify-center px-6 pt-20 pb-16 relative"
+    >
+      <!-- Floating decorative elements -->
+      <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div
+          class="absolute top-[15%] left-[8%] w-16 h-16 bg-white/10 rounded-2xl rotate-12 float-anim"
+        ></div>
+        <div
+          class="absolute top-[20%] right-[10%] w-20 h-20 bg-white/5 rounded-full float-anim-d1"
+        ></div>
+        <div
+          class="absolute bottom-[25%] left-[15%] w-12 h-12 bg-white/8 rounded-lg rotate-45 float-anim-d2"
+        ></div>
+        <div
+          class="absolute bottom-[30%] right-[12%] w-14 h-14 bg-white/5 rounded-2xl -rotate-12 float-anim-d3"
+        ></div>
+        <div
+          class="absolute top-[40%] left-[3%] w-8 h-8 bg-white/10 rounded-full float-anim-d1"
+        ></div>
+        <div
+          class="absolute top-[35%] right-[5%] w-10 h-10 bg-white/8 rounded-lg rotate-30 float-anim-d2"
+        ></div>
+      </div>
+
+      <!-- Main hero content -->
+      <div class="relative z-10 text-center max-w-6xl mx-auto">
+        <p
+          class="text-white/50 text-sm uppercase tracking-[0.2em] mb-8 fade-up font-semibold"
+        >
+          Multi-Vendor Marketplace
+        </p>
+
+        <h1 class="hero-title fade-up fade-up-d1">COMMERCE</h1>
+        <h1
+          class="hero-title fade-up fade-up-d2"
+          style="color: rgba(255, 255, 255, 0.95)"
+        >
+          REIMAGINED
+        </h1>
+
+        <p
+          class="text-white/60 text-lg mt-8 max-w-xl mx-auto fade-up fade-up-d3"
+        >
+          Discover unique products from independent vendors. Buy and sell with
+          confidence.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div
+          class="flex flex-wrap gap-4 justify-center mt-10 fade-up fade-up-d3"
+        >
+          <a
+            href="{% url 'role_login' %}"
+            class="px-8 py-4 bg-white text-[#4318FF] font-bold text-sm uppercase tracking-wide hover:bg-white/90 transition-all duration-300 hover:shadow-lg hover:shadow-white/20"
+          >
+            START SELLING
+          </a>
+          <a
+            href="#products"
+            class="px-8 py-4 bg-transparent border-2 border-white/40 text-white font-bold text-sm uppercase tracking-wide hover:bg-white/10 hover:border-white transition-all duration-300"
+          >
+            EXPLORE SHOP
+          </a>
         </div>
+      </div>
 
-        <!-- Main hero content -->
-        <div class="relative z-10 text-center max-w-6xl mx-auto">
-            <p class="text-white/50 text-sm uppercase tracking-[0.2em] mb-8 fade-up font-semibold">Multi-Vendor Marketplace</p>
-
-            <h1 class="hero-title fade-up fade-up-d1">COMMERCE</h1>
-            <h1 class="hero-title fade-up fade-up-d2" style="color: rgba(255,255,255,0.95);">REIMAGINED</h1>
-
-            <p class="text-white/60 text-lg mt-8 max-w-xl mx-auto fade-up fade-up-d3">
-                Discover unique products from independent vendors. Buy and sell with confidence.
-            </p>
-
-            <!-- CTA Buttons -->
-            <div class="flex flex-wrap gap-4 justify-center mt-10 fade-up fade-up-d3">
-                <a href="{% url 'role_login' %}" class="px-8 py-4 bg-white text-[#4318FF] font-bold text-sm uppercase tracking-wide hover:bg-white/90 transition-all duration-300 hover:shadow-lg hover:shadow-white/20">
-                    START SELLING
-                </a>
-                <a href="#products" class="px-8 py-4 bg-transparent border-2 border-white/40 text-white font-bold text-sm uppercase tracking-wide hover:bg-white/10 hover:border-white transition-all duration-300">
-                    EXPLORE SHOP
-                </a>
-            </div>
-        </div>
-
-        <!-- Scroll indicator -->
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 fade-up fade-up-d3">
-            <a href="#products" class="flex flex-col items-center gap-2 text-white/40 hover:text-white/70 transition">
-                <span class="text-xs uppercase tracking-widest font-semibold">Scroll</span>
-                <i class="fas fa-chevron-down text-sm animate-bounce"></i>
-            </a>
-        </div>
+      <!-- Scroll indicator -->
+      <div
+        class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 fade-up fade-up-d3"
+      >
+        <a
+          href="#products"
+          class="flex flex-col items-center gap-2 text-white/40 hover:text-white/70 transition"
+        >
+          <span class="text-xs uppercase tracking-widest font-semibold"
+            >Scroll</span
+          >
+          <i class="fas fa-chevron-down text-sm animate-bounce"></i>
+        </a>
+      </div>
     </section>
 
     <!-- TRANSITION STRIP -->
-    <div class="h-1 bg-gradient-to-r from-[#4318FF] via-[#6C3AFF] to-[#0a0a0a]"></div>
+    <div
+      class="h-1 bg-gradient-to-r from-[#4318FF] via-[#6C3AFF] to-[#0a0a0a]"
+    ></div>
 
     <!-- Messages -->
     {% if messages %}
-        <div class="max-w-7xl mx-auto px-8 pt-8">
-            {% for message in messages %}
-                <div class="p-4 bg-[#141414] border border-[#222] text-[#ccc] text-sm mb-3">
-                    <i class="fas fa-check-circle mr-2 text-white"></i>{{ message }}
-                </div>
-            {% endfor %}
-        </div>
+    <div class="max-w-7xl mx-auto px-8 pt-8">
+      {% for message in messages %}
+      <div
+        class="p-4 bg-[#141414] border border-[#222] text-[#ccc] text-sm mb-3"
+      >
+        <i class="fas fa-check-circle mr-2 text-white"></i>{{ message }}
+      </div>
+      {% endfor %}
+    </div>
     {% endif %}
 
     <!-- PRODUCTS SECTION -->
     <section class="bg-[#0a0a0a] py-20 px-8" id="products">
-        <div class="max-w-7xl mx-auto">
-            <!-- Section Header -->
-            <div class="flex items-end justify-between mb-8">
-                <div>
-                    <p class="text-[#4318FF] text-xs uppercase tracking-[0.3em] font-bold mb-3">Marketplace</p>
-                    <h2 class="text-4xl font-bold text-white">ALL PRODUCTS</h2>
-                </div>
-            </div>
-
-            <!-- Search & Sort Bar -->
-            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                <form method="GET" action="/#products" class="flex items-center gap-2 flex-1 max-w-xl">
-                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search products..."
-                        class="flex-1 px-4 py-3 bg-[#141414] border border-[#222] text-white placeholder-[#555] text-sm focus:outline-none focus:border-[#444] transition">
-                    {% if current_category %}<input type="hidden" name="category" value="{{ current_category }}">{% endif %}
-                    <input type="hidden" name="sort" value="{{ current_sort }}">
-                    <button type="submit" class="px-6 py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition">Search</button>
-                </form>
-                <div class="relative">
-                    <select id="sortSelect" onchange="applySortFilter(this.value)"
-                        class="appearance-none px-4 py-3 pr-10 bg-[#141414] border border-[#222] text-white text-sm focus:outline-none focus:border-[#444] transition cursor-pointer min-w-[160px]">
-                        <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>Newest First</option>
-                        <option value="price_low" {% if current_sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
-                        <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
-                    </select>
-                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[#555] text-xs pointer-events-none"></i>
-                </div>
-            </div>
-
-            <!-- Category Filter Buttons -->
-            <div class="flex flex-wrap gap-3 mb-6">
-                <a href="/?sort={{ current_sort }}{% if search_query %}&q={{ search_query }}{% endif %}#products"
-                   class="px-5 py-2 border text-sm font-bold uppercase tracking-wide transition {% if not current_category %}bg-white text-[#0a0a0a] border-white{% else %}bg-transparent text-[#888] border-[#333] hover:border-[#888] hover:text-white{% endif %}">All</a>
-                {% for value, label in categories %}
-                    <a href="/?category={{ value }}&sort={{ current_sort }}{% if search_query %}&q={{ search_query }}{% endif %}#products"
-                       class="px-5 py-2 border text-sm font-bold uppercase tracking-wide transition {% if current_category == value %}bg-white text-[#0a0a0a] border-white{% else %}bg-transparent text-[#888] border-[#333] hover:border-[#888] hover:text-white{% endif %}">{{ label }}</a>
-                {% endfor %}
-            </div>
-
-            <!-- Product count -->
-            <p class="text-[#555] text-sm mb-8">{{ products|length }} product{{ products|length|pluralize }} found</p>
-
-            {% if products %}
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {% for product in products %}
-                        <div class="product-card group bg-[#141414] border border-[#222] overflow-hidden hover:border-[#444] transition-all duration-300">
-                            <div class="w-full aspect-square bg-[#1a1a1a] overflow-hidden">
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img w-full h-full object-cover transition-transform duration-500">
-                                {% else %}
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <i class="fas fa-image text-4xl text-[#333]"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="p-5">
-                                <p class="text-[#555] text-[10px] uppercase tracking-[.2em] mb-2">{{ product.vendor.business_name }}</p>
-                                <h3 class="text-white font-semibold text-sm mb-1">{{ product.name }}</h3>
-                                <div class="mb-2">
-                                    <span class="inline-block px-2 py-0.5 bg-[#1a1a1a] border border-[#333] text-[#888] text-[10px] uppercase tracking-widest font-semibold">{{ product.get_category_display }}</span>
-                                </div>
-                                <p class="text-[#888] text-xs mb-4 line-clamp-2">{{ product.description }}</p>
-                                {% if product.get_sizes_list %}
-                                    <div class="mb-3">
-                                        <p class="text-[#555] text-[10px] uppercase tracking-[.15em] font-semibold mb-2">Select Size</p>
-                                        <div class="flex flex-wrap gap-1.5" id="sizes-{{ product.id }}">
-                                            {% for size in product.get_sizes_list %}
-                                                <button type="button" onclick="selectSize({{ product.id }}, '{{ size }}', this)"
-                                                    class="size-btn-{{ product.id }} px-2.5 py-1 bg-[#1a1a1a] border border-[#333] text-[#888] text-xs font-semibold hover:border-[#888] hover:text-white transition cursor-pointer">
-                                                    {{ size }}
-                                                </button>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                {% endif %}
-                                <div class="flex items-center justify-between mb-4">
-                                    <span class="text-white font-bold text-lg">₹{{ product.price }}</span>
-                                    <span class="text-[#555] text-xs">{{ product.quantity }} left</span>
-                                </div>
-                                {% if product.quantity > 0 %}
-                                    <a href="{% url 'add_to_cart' product.id %}" id="cart-btn-{{ product.id }}"
-                                       onclick="return handleAddToCart(event, {{ product.id }}, {{ product.get_sizes_list|length }})"
-                                       class="block w-full py-3 bg-white text-[#0a0a0a] text-center text-sm font-bold uppercase tracking-wide hover:bg-[#e0e0e0] transition">Add to Cart</a>
-                                {% else %}
-                                    <button disabled class="w-full py-3 bg-[#1a1a1a] text-[#555] text-sm font-bold uppercase tracking-wide cursor-not-allowed">Out of Stock</button>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-20 border border-[#222] bg-[#141414]">
-                    <i class="fas fa-inbox text-5xl text-[#333] mb-4"></i>
-                    <p class="text-[#888]">No products available at the moment.</p>
-                </div>
-            {% endif %}
+      <div class="max-w-7xl mx-auto">
+        <!-- Section Header -->
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <p
+              class="text-[#4318FF] text-xs uppercase tracking-[0.3em] font-bold mb-3"
+            >
+              Marketplace
+            </p>
+            <h2 class="text-4xl font-bold text-white">ALL PRODUCTS</h2>
+          </div>
         </div>
+
+        <!-- Search & Sort Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <form
+            method="GET"
+            action="/#products"
+            class="flex items-center gap-2 flex-1 max-w-xl"
+          >
+            <input
+              type="text"
+              name="q"
+              value="{{ search_query }}"
+              placeholder="Search products..."
+              class="flex-1 px-4 py-3 bg-[#141414] border border-[#222] text-white placeholder-[#555] text-sm focus:outline-none focus:border-[#444] transition"
+            />
+            {% if current_category %}<input
+              type="hidden"
+              name="category"
+              value="{{ current_category }}"
+            />{% endif %}
+            <input type="hidden" name="sort" value="{{ current_sort }}" />
+            <button
+              type="submit"
+              class="px-6 py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition"
+            >
+              Search
+            </button>
+          </form>
+          <div class="relative">
+            <select
+              id="sortSelect"
+              onchange="applySortFilter(this.value)"
+              class="appearance-none px-4 py-3 pr-10 bg-[#141414] border border-[#222] text-white text-sm focus:outline-none focus:border-[#444] transition cursor-pointer min-w-[160px]"
+            >
+              <option
+                value="newest"
+                {%
+                if
+                current_sort=""
+                ="newest"
+                %}selected{%
+                endif
+                %}
+              >
+                Newest First
+              </option>
+              <option
+                value="price_low"
+                {%
+                if
+                current_sort=""
+                ="price_low"
+                %}selected{%
+                endif
+                %}
+              >
+                Price: Low to High
+              </option>
+              <option
+                value="price_high"
+                {%
+                if
+                current_sort=""
+                ="price_high"
+                %}selected{%
+                endif
+                %}
+              >
+                Price: High to Low
+              </option>
+            </select>
+            <i
+              class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[#555] text-xs pointer-events-none"
+            ></i>
+          </div>
+        </div>
+
+        <!-- Category Filter Buttons -->
+        <div class="flex flex-wrap gap-3 mb-6">
+          <a
+            href="/?sort={{ current_sort }}{% if search_query %}&q={{ search_query }}{% endif %}#products"
+            class="px-5 py-2 border text-sm font-bold uppercase tracking-wide transition {% if not current_category %}bg-white text-[#0a0a0a] border-white{% else %}bg-transparent text-[#888] border-[#333] hover:border-[#888] hover:text-white{% endif %}"
+            >All</a
+          >
+          {% for value, label in categories %}
+          <a
+            href="/?category={{ value }}&sort={{ current_sort }}{% if search_query %}&q={{ search_query }}{% endif %}#products"
+            class="px-5 py-2 border text-sm font-bold uppercase tracking-wide transition {% if current_category == value %}bg-white text-[#0a0a0a] border-white{% else %}bg-transparent text-[#888] border-[#333] hover:border-[#888] hover:text-white{% endif %}"
+            >{{ label }}</a
+          >
+          {% endfor %}
+        </div>
+
+        <!-- Product count -->
+        <p class="text-[#555] text-sm mb-8">
+          {{ products|length }} product{{ products|length|pluralize }} found
+        </p>
+
+        {% if products %}
+        <div
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
+          {% for product in products %}
+          <div
+            class="product-card group bg-[#141414] border border-[#222] overflow-hidden hover:border-[#444] transition-all duration-300"
+          >
+            <div class="w-full aspect-square bg-[#1a1a1a] overflow-hidden">
+              {% if product.image %}
+              <img
+                src="{{ product.image.url }}"
+                alt="{{ product.name }}"
+                class="product-img w-full h-full object-cover transition-transform duration-500"
+              />
+              {% else %}
+              <div class="w-full h-full flex items-center justify-center">
+                <i class="fas fa-image text-4xl text-[#333]"></i>
+              </div>
+              {% endif %}
+            </div>
+            <div class="p-5">
+              <p class="text-[#555] text-[10px] uppercase tracking-[.2em] mb-2">
+                {{ product.vendor.business_name }}
+              </p>
+              <h3 class="text-white font-semibold text-sm mb-1">
+                {{ product.name }}
+              </h3>
+              <div class="mb-2">
+                <span
+                  class="inline-block px-2 py-0.5 bg-[#1a1a1a] border border-[#333] text-[#888] text-[10px] uppercase tracking-widest font-semibold"
+                  >{{ product.get_category_display }}</span
+                >
+              </div>
+              <p class="text-[#888] text-xs mb-4 line-clamp-2">
+                {{ product.description }}
+              </p>
+              {% if product.get_sizes_list %}
+              <div class="mb-3">
+                <p
+                  class="text-[#555] text-[10px] uppercase tracking-[.15em] font-semibold mb-2"
+                >
+                  Select Size
+                </p>
+                <div class="flex flex-wrap gap-1.5" id="sizes-{{ product.id }}">
+                  {% for size in product.get_sizes_list %}
+                  <button
+                    type="button"
+                    data-product-id="{{ product.id }}"
+                    data-size="{{ size }}"
+                    class="size-btn size-btn-{{ product.id }} px-2.5 py-1 bg-[#1a1a1a] border border-[#333] text-[#888] text-xs font-semibold hover:border-[#888] hover:text-white transition cursor-pointer"
+                  >
+                    {{ size }}
+                  </button>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-white font-bold text-lg"
+                  >₹{{ product.price }}</span
+                >
+                <span class="text-[#555] text-xs"
+                  >{{ product.quantity }} left</span
+                >
+              </div>
+              {% if product.quantity > 0 %}
+              <a
+                href="{% url 'role_login' %}"
+                class="block w-full py-3 bg-white text-[#0a0a0a] text-center text-sm font-bold uppercase tracking-wide hover:bg-[#e0e0e0] transition"
+                >Add to Cart</a
+              >
+              {% else %}
+              <button
+                disabled
+                class="w-full py-3 bg-[#1a1a1a] text-[#555] text-sm font-bold uppercase tracking-wide cursor-not-allowed"
+              >
+                Out of Stock
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-20 border border-[#222] bg-[#141414]">
+          <i class="fas fa-inbox text-5xl text-[#333] mb-4"></i>
+          <p class="text-[#888]">No products available at the moment.</p>
+        </div>
+        {% endif %}
+      </div>
     </section>
 
     <!-- FOOTER -->
     <footer class="bg-[#0a0a0a] border-t border-[#222] py-10">
-        <div class="max-w-5xl mx-auto px-8 text-center">
-            <p class="text-[#555] text-sm">&copy; 2026 MEEVA — Multi Vendor Marketplace. All rights reserved.</p>
-        </div>
+      <div class="max-w-5xl mx-auto px-8 text-center">
+        <p class="text-[#555] text-sm">
+          &copy; 2026 MEEVA — Multi Vendor Marketplace. All rights reserved.
+        </p>
+      </div>
     </footer>
 
     <!-- Scroll to top -->
-    <button onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-8 right-8 p-3 bg-[#4318FF] text-white hover:bg-[#5a30ff] transition hidden z-50" id="scrollTopBtn">
-        <i class="fas fa-arrow-up text-sm"></i>
+    <button
+      onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+      class="fixed bottom-8 right-8 p-3 bg-[#4318FF] text-white hover:bg-[#5a30ff] transition hidden z-50"
+      id="scrollTopBtn"
+    >
+      <i class="fas fa-arrow-up text-sm"></i>
     </button>
 
     <script>
-        // Track selected sizes per product
-        const selectedSizes = {};
+      // Track selected sizes per product
+      const selectedSizes = {};
 
-        function selectSize(productId, size, btn) {
-            document.querySelectorAll('.size-btn-' + productId).forEach(b => {
-                b.classList.remove('bg-white', 'text-[#0a0a0a]', 'border-white');
-                b.classList.add('bg-[#1a1a1a]', 'text-[#888]', 'border-[#333]');
-            });
-            btn.classList.remove('bg-[#1a1a1a]', 'text-[#888]', 'border-[#333]');
-            btn.classList.add('bg-white', 'text-[#0a0a0a]', 'border-white');
-            selectedSizes[productId] = size;
+      // Delegated click handler for size buttons
+      document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".size-btn");
+        if (btn) {
+          var productId = btn.getAttribute("data-product-id");
+          var size = btn.getAttribute("data-size");
+          selectSize(productId, size, btn);
         }
+      });
 
-        function handleAddToCart(event, productId, hasSizes) {
-            if (hasSizes > 0 && !selectedSizes[productId]) {
-                event.preventDefault();
-                alert('Please select a size before adding to cart.');
-                return false;
-            }
-            if (hasSizes > 0 && selectedSizes[productId]) {
-                event.preventDefault();
-                const btn = document.getElementById('cart-btn-' + productId);
-                const url = btn.href + '?size=' + encodeURIComponent(selectedSizes[productId]);
-                window.location.href = url;
-                return false;
-            }
-            return true;
+      function selectSize(productId, size, btn) {
+        document.querySelectorAll(".size-btn-" + productId).forEach((b) => {
+          b.classList.remove("bg-white", "text-[#0a0a0a]", "border-white");
+          b.classList.add("bg-[#1a1a1a]", "text-[#888]", "border-[#333]");
+        });
+        btn.classList.remove("bg-[#1a1a1a]", "text-[#888]", "border-[#333]");
+        btn.classList.add("bg-white", "text-[#0a0a0a]", "border-white");
+        selectedSizes[productId] = size;
+      }
+
+      function handleAddToCart(event, productId, hasSizes) {
+        if (hasSizes > 0 && !selectedSizes[productId]) {
+          event.preventDefault();
+          alert("Please select a size before adding to cart.");
+          return false;
         }
-
-        // Scroll top button visibility
-        window.addEventListener('scroll', function() {
-            const btn = document.getElementById('scrollTopBtn');
-            btn.style.display = window.pageYOffset > 400 ? 'block' : 'none';
-
-            // Navbar background transition
-            const nav = document.querySelector('nav');
-            if (window.pageYOffset > window.innerHeight - 100) {
-                nav.style.background = 'rgba(10, 10, 10, 0.95)';
-            } else {
-                nav.style.background = 'rgba(67, 24, 255, 0.95)';
-            }
-        });
-
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(a => {
-            a.addEventListener('click', function(e) {
-                e.preventDefault();
-                const t = document.querySelector(this.getAttribute('href'));
-                if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-        });
-
-        // Intersection Observer for product card animations
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry, index) => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.product-card').forEach((card, i) => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = `all 0.5s ease-out ${i * 0.08}s`;
-            observer.observe(card);
-        });
-
-        function applySortFilter(sort) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('sort', sort);
-            url.hash = 'products';
-            window.location.href = url.toString();
+        if (hasSizes > 0 && selectedSizes[productId]) {
+          event.preventDefault();
+          const btn = document.getElementById("cart-btn-" + productId);
+          const url =
+            btn.href + "?size=" + encodeURIComponent(selectedSizes[productId]);
+          window.location.href = url;
+          return false;
         }
+        return true;
+      }
+
+      // Scroll top button visibility
+      window.addEventListener("scroll", function () {
+        const btn = document.getElementById("scrollTopBtn");
+        btn.style.display = window.pageYOffset > 400 ? "block" : "none";
+
+        // Navbar background transition
+        const nav = document.querySelector("nav");
+        if (window.pageYOffset > window.innerHeight - 100) {
+          nav.style.background = "rgba(10, 10, 10, 0.95)";
+        } else {
+          nav.style.background = "rgba(67, 24, 255, 0.95)";
+        }
+      });
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((a) => {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          const t = document.querySelector(this.getAttribute("href"));
+          if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+
+      // Intersection Observer for product card animations
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+              entry.target.style.opacity = "1";
+              entry.target.style.transform = "translateY(0)";
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
+
+      document.querySelectorAll(".product-card").forEach((card, i) => {
+        card.style.opacity = "0";
+        card.style.transform = "translateY(30px)";
+        card.style.transition = `all 0.5s ease-out ${i * 0.08}s`;
+        observer.observe(card);
+      });
+
+      function applySortFilter(sort) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("sort", sort);
+        url.hash = "products";
+        window.location.href = url.toString();
+      }
     </script>
-</body>
+  </body>
 </html>

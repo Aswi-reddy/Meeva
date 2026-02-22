@@ -3,7 +3,13 @@ from django.db.models import Q
 from vendor.models import Product
 
 def landing_page(request):
-    """Landing page with products"""
+    """Landing page with products - always public, logs out any user"""
+    # Clear user login session so landing page is always public
+    request.session.pop('user_logged_in', None)
+    request.session.pop('user_email', None)
+    request.session.pop('user_id', None)
+    request.session.pop('cart', None)
+
     all_products = Product.objects.filter(is_active=True)
     
     # Search
