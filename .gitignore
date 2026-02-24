@@ -1,0 +1,19 @@
+venv/
+__pycache__/
+*.pyc
+.env
+db.sqlite3
+media/
+staticfiles/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
