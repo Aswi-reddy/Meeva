@@ -9,6 +9,7 @@ urlpatterns = [
     path('meevaadmin/', include('core_admin.urls')),  # Custom admin panel
     path('vendor/', include('vendor.urls')),  # Vendor panel
     path('user/', include('users.urls')),  # User panel
+    path('api/v1/', include('api.urls')),  # REST API (DRF)
 ]
 
 # Serve media files in development

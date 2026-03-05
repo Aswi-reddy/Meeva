@@ -3,9 +3,113 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.hashers import make_password, check_password
+from django.db import transaction
 from django.db.models import Sum, Count, Q
-from .models import Vendor, Product, Order
-from .emails import send_vendor_registration_email
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils import timezone
+from .models import Vendor, Product, Order, ProductSizeStock
+from .emails import (
+    send_vendor_registration_email,
+    send_user_order_accepted_email,
+    send_user_order_delivered_email,
+)
+from users.models import PasswordResetOTP
+
+
+def _parse_size_stock_input(raw_text):
+    """Parse size stock input like: 'S:10, M:0, L:5' or 'S=10,M=0'."""
+    raw_text = (raw_text or '').strip()
+    if not raw_text:
+        return {}
+
+    pairs = [p.strip() for p in raw_text.split(',') if p.strip()]
+    result = {}
+    for pair in pairs:
+        if ':' in pair:
+            size_part, qty_part = pair.split(':', 1)
+        elif '=' in pair:
+            size_part, qty_part = pair.split('=', 1)
+        else:
+            raise ValueError('Invalid format. Use S:10, M:0, L:5')
+
+        size = size_part.strip()
+        qty_str = qty_part.strip()
+        if not size:
+            raise ValueError('Size cannot be empty.')
+        try:
+            qty = int(qty_str)
+        except ValueError:
+            raise ValueError(f'Invalid quantity for size "{size}".')
+        if qty < 0:
+            raise ValueError('Quantity cannot be negative.')
+        result[size] = qty
+    return result
+
+
+def _apply_size_stock(product, raw_text):
+    """Upsert ProductSizeStock rows from vendor input and sync Product.quantity.
+
+    No-op when raw_text is blank (keeps legacy/global quantity flow).
+    """
+    raw_text = (raw_text or '').strip()
+    if not raw_text:
+        # Keep existing size stock rows as-is when vendor doesn't provide input.
+        return
+
+    stock_map = _parse_size_stock_input(raw_text)
+    sizes = product.get_sizes_list()
+
+    if sizes:
+        unknown = [k for k in stock_map.keys() if k not in sizes]
+        if unknown:
+            raise ValueError(f"Unknown size(s) not in sizes list: {', '.join(unknown)}")
+
+    with transaction.atomic():
+        if sizes:
+            ProductSizeStock.objects.filter(product=product).exclude(size__in=sizes).delete()
+
+        for size, qty in stock_map.items():
+            ProductSizeStock.objects.update_or_create(
+                product=product,
+                size=size,
+                defaults={'quantity': qty},
+            )
+
+        # Sync total quantity from per-size stock when present
+        if ProductSizeStock.objects.filter(product=product).exists():
+            total = ProductSizeStock.objects.filter(product=product).aggregate(Sum('quantity'))['quantity__sum'] or 0
+            product.quantity = int(total)
+            product.save(update_fields=['quantity'])
+
+
+def _deduct_stock_on_accept(order):
+    """Deduct stock for the order. Returns (ok, error_message)."""
+    with transaction.atomic():
+        product = Product.objects.select_for_update().get(id=order.product_id)
+        qty = int(order.quantity)
+
+        # If product uses size-wise stock and order has size, decrement that size row.
+        if getattr(order, 'size', '') and ProductSizeStock.objects.filter(product=product).exists():
+            row = ProductSizeStock.objects.select_for_update().filter(product=product, size=order.size).first()
+            if not row:
+                return False, f'Size "{order.size}" not configured for this product.'
+            if row.quantity < qty:
+                return False, f'Insufficient stock for size "{order.size}" (available: {row.quantity}).'
+            row.quantity -= qty
+            row.save(update_fields=['quantity', 'updated_at'])
+
+            total = ProductSizeStock.objects.filter(product=product).aggregate(Sum('quantity'))['quantity__sum'] or 0
+            product.quantity = int(total)
+            product.save(update_fields=['quantity'])
+            return True, ''
+
+        # Fallback: global quantity
+        if product.quantity < qty:
+            return False, f'Insufficient stock (available: {product.quantity}).'
+        product.quantity -= qty
+        product.save(update_fields=['quantity'])
+        return True, ''
 
 
 @csrf_protect
@@ -171,7 +275,7 @@ def vendor_products(request):
     if not vendor:
         return redirect('vendor_login')
     
-    products = vendor.products.all()
+    products = vendor.products.all().prefetch_related('size_stocks')
     context = {
         'vendor': vendor,
         'products': products,
@@ -193,6 +297,7 @@ def add_product(request):
             description = request.POST.get('description', '').strip()
             category = request.POST.get('category', 'other').strip()
             sizes = request.POST.get('sizes', '').strip()
+            size_stock = request.POST.get('size_stock', '').strip()
             price = request.POST.get('price', '')
             quantity = request.POST.get('quantity', '')
             image = request.FILES.get('image')
@@ -211,6 +316,13 @@ def add_product(request):
                 quantity=int(quantity),
                 image=image,
             )
+
+            # Optional: size-wise stock input
+            if sizes and size_stock:
+                try:
+                    _apply_size_stock(product, size_stock)
+                except Exception as e:
+                    messages.warning(request, f'Size-wise stock not applied: {str(e)}')
             
             messages.success(request, 'Product added successfully!')
             return redirect('vendor_products')
@@ -242,6 +354,7 @@ def edit_product(request, product_id):
             product.description = request.POST.get('description', product.description)
             product.category = request.POST.get('category', product.category)
             product.sizes = request.POST.get('sizes', product.sizes)
+            size_stock = request.POST.get('size_stock', '').strip()
             product.price = float(request.POST.get('price', product.price))
             product.quantity = int(request.POST.get('quantity', product.quantity))
             
@@ -249,6 +362,21 @@ def edit_product(request, product_id):
                 product.image = request.FILES.get('image')
             
             product.save()
+
+            # If size-wise stock exists, drop rows for removed sizes.
+            sizes_list = product.get_sizes_list()
+            if sizes_list and ProductSizeStock.objects.filter(product=product).exists():
+                ProductSizeStock.objects.filter(product=product).exclude(size__in=sizes_list).delete()
+                total = ProductSizeStock.objects.filter(product=product).aggregate(Sum('quantity'))['quantity__sum'] or 0
+                product.quantity = int(total)
+                product.save(update_fields=['quantity'])
+
+            # Optional: update size-wise stock
+            if product.sizes and size_stock:
+                try:
+                    _apply_size_stock(product, size_stock)
+                except Exception as e:
+                    messages.warning(request, f'Size-wise stock not applied: {str(e)}')
             messages.success(request, 'Product updated successfully!')
             return redirect('vendor_products')
         
@@ -301,12 +429,35 @@ def update_order_status(request, order_id):
     new_status = request.POST.get('status', '').strip()
     valid = [s[0] for s in Order.STATUS_CHOICES]
 
-    if new_status in valid:
-        order.status = new_status
-        order.save()
-        messages.success(request, f'Order #{order.id} marked as "{order.get_status_display()}".')
-    else:
+    if new_status not in valid:
         messages.error(request, 'Invalid status.')
+        return redirect('vendor_orders')
+
+    previous_status = order.status
+    if previous_status == new_status:
+        return redirect('vendor_orders')
+
+    # When vendor accepts (moves off pending into a fulfillment status), deduct stock.
+    accepted_statuses = {'confirmed', 'shipped', 'delivered'}
+    if previous_status == 'pending' and new_status in accepted_statuses:
+        ok, err = _deduct_stock_on_accept(order)
+        if not ok:
+            messages.error(request, f'Cannot accept order: {err}')
+            return redirect('vendor_orders')
+
+        # Email user once on acceptance
+        if not order.user_accepted_email_sent:
+            if send_user_order_accepted_email(order):
+                order.user_accepted_email_sent = True
+
+    # Email user once on delivered
+    if new_status == 'delivered' and not order.user_delivered_email_sent:
+        if send_user_order_delivered_email(order):
+            order.user_delivered_email_sent = True
+
+    order.status = new_status
+    order.save()
+    messages.success(request, f'Order #{order.id} marked as "{order.get_status_display()}".')
 
     return redirect('vendor_orders')
 
@@ -330,3 +481,147 @@ def vendor_sales_report(request):
         'total_orders': total_orders_count,
     }
     return render(request, 'vendor/sales_report.html', context)
+
+
+# ==================== FORGOT PASSWORD VIEWS ====================
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def vendor_forgot_password(request):
+    """Step 1: Take email and send OTP"""
+    if request.method == "POST":
+        email = request.POST.get('email', '').strip()
+        
+        if not email:
+            messages.error(request, 'Please enter your email address.')
+            return render(request, 'vendor/forgot_password.html')
+        
+        # Check if email exists in Vendor table
+        try:
+            vendor = Vendor.objects.get(email=email, is_active=True)
+        except Vendor.DoesNotExist:
+            messages.error(request, 'No vendor account found with this email address.')
+            return render(request, 'vendor/forgot_password.html')
+        
+        # Generate OTP
+        otp_code = PasswordResetOTP.generate_otp()
+        
+        # Delete any previous OTPs for this email & role
+        PasswordResetOTP.objects.filter(email=email, role='vendor').delete()
+        
+        # Create new OTP
+        PasswordResetOTP.objects.create(
+            email=email,
+            otp=otp_code,
+            role='vendor',
+            expires_at=timezone.now() + timezone.timedelta(minutes=10),
+        )
+        
+        # Send OTP via email
+        try:
+            send_mail(
+                subject='🔐 Password Reset OTP - Meeva Vendor',
+                message=f'Hello {vendor.full_name},\n\nYour OTP for password reset is: {otp_code}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.\n\nTeam Meeva',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            request.session['reset_email'] = email
+            request.session['reset_role'] = 'vendor'
+            messages.success(request, 'OTP sent to your email. Please check your inbox.')
+            return redirect('vendor_verify_otp')
+        except Exception as e:
+            messages.error(request, f'Failed to send OTP email. Please try again later.')
+            return render(request, 'vendor/forgot_password.html')
+    
+    return render(request, 'vendor/forgot_password.html')
+
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def vendor_verify_otp(request):
+    """Step 2: Verify OTP"""
+    email = request.session.get('reset_email')
+    role = request.session.get('reset_role')
+    
+    if not email or role != 'vendor':
+        messages.error(request, 'Session expired. Please start again.')
+        return redirect('vendor_forgot_password')
+    
+    if request.method == "POST":
+        entered_otp = request.POST.get('otp', '').strip()
+        
+        if not entered_otp:
+            messages.error(request, 'Please enter the OTP.')
+            return render(request, 'vendor/verify_otp.html', {'email': email})
+        
+        try:
+            otp_record = PasswordResetOTP.objects.get(
+                email=email, role='vendor', otp=entered_otp, is_verified=False
+            )
+            
+            if otp_record.is_expired:
+                messages.error(request, 'OTP has expired. Please request a new one.')
+                return redirect('vendor_forgot_password')
+            
+            # Mark OTP as verified
+            otp_record.is_verified = True
+            otp_record.save()
+            
+            request.session['otp_verified'] = True
+            messages.success(request, 'OTP verified! Please set your new password.')
+            return redirect('vendor_reset_password')
+            
+        except PasswordResetOTP.DoesNotExist:
+            messages.error(request, 'Invalid OTP. Please try again.')
+    
+    return render(request, 'vendor/verify_otp.html', {'email': email})
+
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def vendor_reset_password(request):
+    """Step 3: Reset password"""
+    email = request.session.get('reset_email')
+    role = request.session.get('reset_role')
+    otp_verified = request.session.get('otp_verified')
+    
+    if not email or role != 'vendor' or not otp_verified:
+        messages.error(request, 'Session expired. Please start again.')
+        return redirect('vendor_forgot_password')
+    
+    if request.method == "POST":
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        
+        if not new_password or not confirm_password:
+            messages.error(request, 'Both password fields are required.')
+            return render(request, 'vendor/reset_password.html')
+        
+        if new_password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'vendor/reset_password.html')
+        
+        if len(new_password) < 6:
+            messages.error(request, 'Password must be at least 6 characters long.')
+            return render(request, 'vendor/reset_password.html')
+        
+        try:
+            vendor = Vendor.objects.get(email=email, is_active=True)
+            vendor.password = make_password(new_password)
+            vendor.save()
+            
+            # Cleanup OTPs and session
+            PasswordResetOTP.objects.filter(email=email, role='vendor').delete()
+            request.session.pop('reset_email', None)
+            request.session.pop('reset_role', None)
+            request.session.pop('otp_verified', None)
+            
+            messages.success(request, 'Password updated successfully! Please login with your new password.')
+            return redirect('vendor_login')
+            
+        except Vendor.DoesNotExist:
+            messages.error(request, 'Vendor not found.')
+            return redirect('vendor_forgot_password')
+    
+    return render(request, 'vendor/reset_password.html')

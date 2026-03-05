@@ -28,10 +28,12 @@ Gmail has disabled "Less Secure Apps" access. You **MUST** use an App Password i
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=sumanaswireddy@gmail.com
-EMAIL_HOST_PASSWORD=Reddy@1234  # ⚠️ Replace with App Password
-DEFAULT_FROM_EMAIL=sumanaswireddy@gmail.com
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-16-character-app-password  # ⚠️ Use Gmail App Password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
 ```
+
+⚠️ Never commit real credentials (emails/passwords/app-passwords) into the repository. Store them only as environment variables (Render dashboard, `.env` locally).
 
 ---
 

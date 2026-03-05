@@ -46,10 +46,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'drf_spectacular',
+    'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
     'core_admin',
     'vendor',
     'pages',
     'users',
+    'api',
 ]
 
 if not DEBUG:
@@ -58,6 +63,7 @@ if not DEBUG:
     ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -145,6 +151,9 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STORAGES = {
+    'default': {
+        'BACKEND': 'django.core.files.storage.FileSystemStorage',
+    },
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
@@ -172,10 +181,57 @@ CSRF_TRUSTED_ORIGINS = [
     o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()
 ]
 
+# CORS (needed for mobile apps / separate frontends)
+# In production, set CORS_ALLOWED_ORIGINS env var to a comma-separated list.
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()
+]
+CORS_ALLOW_ALL_ORIGINS = DEBUG and not CORS_ALLOWED_ORIGINS
+
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+
+
+# Django REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'api.authentication.MeevaJWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # Throttling is applied per-view using ScopedRateThrottle + throttle_scope.
+    'DEFAULT_THROTTLE_RATES': {
+        'auth_login': os.getenv('THROTTLE_AUTH_LOGIN', '10/min'),
+        'auth_otp': os.getenv('THROTTLE_AUTH_OTP', '5/min'),
+    },
+}
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': os.getenv('OPENAPI_TITLE', 'Meeva API'),
+    'DESCRIPTION': os.getenv('OPENAPI_DESCRIPTION', 'Meeva REST API documentation'),
+    'VERSION': os.getenv('OPENAPI_VERSION', '1.0.0'),
+    'SERVE_INCLUDE_SCHEMA': False,
+}
+
+
+# SimpleJWT
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv('JWT_ACCESS_MINUTES', '15'))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv('JWT_REFRESH_DAYS', '7'))),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ROTATE_REFRESH_TOKENS': os.getenv('JWT_ROTATE_REFRESH_TOKENS', 'True') == 'True',
+    'BLACKLIST_AFTER_ROTATION': True,
+}
 
 
 # Default primary key field type

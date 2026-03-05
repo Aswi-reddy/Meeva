@@ -5,6 +5,62 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 
+def send_user_order_accepted_email(order):
+    """Email user once when vendor accepts the order."""
+    subject = f"✅ Order Confirmed - Meeva (Order #{order.id})"
+    size_line = f"\nSize: {order.size}" if getattr(order, 'size', '') else ""
+    message = f"""
+Hello {order.buyer_name},
+
+Good news — your order has been accepted by the vendor.
+
+Order Details:
+Order ID: {order.id}
+Product: {order.product.name}{size_line}
+Quantity: {order.quantity}
+Total: ₹{order.total_price}
+
+You can track the status in My Orders.
+
+Thanks,
+Meeva Team
+"""
+
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.buyer_email], fail_silently=False)
+        return True
+    except Exception as e:
+        print(f"❌ User accepted email error: {e}")
+        return False
+
+
+def send_user_order_delivered_email(order):
+    """Email user once when order is marked delivered."""
+    subject = f"📦 Delivered - Meeva (Order #{order.id})"
+    size_line = f"\nSize: {order.size}" if getattr(order, 'size', '') else ""
+    message = f"""
+Hello {order.buyer_name},
+
+Your order has been delivered.
+
+Order Details:
+Order ID: {order.id}
+Product: {order.product.name}{size_line}
+Quantity: {order.quantity}
+
+Thanks for shopping with Meeva.
+
+Meeva Team
+"""
+
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [order.buyer_email], fail_silently=False)
+        return True
+    except Exception as e:
+        print(f"❌ User delivered email error: {e}")
+        return False
+
+
 def send_vendor_registration_email(vendor):
     """Send simple email to vendor after registration"""
     subject = '🎉 Registration Successful - Meeva'

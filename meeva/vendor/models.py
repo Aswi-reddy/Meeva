@@ -82,6 +82,10 @@ class Vendor(models.Model):
         verbose_name = 'Vendor'
         verbose_name_plural = 'Vendors'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at'], name='vendor_status_created_idx'),
+            models.Index(fields=['is_active', 'created_at'], name='vendor_active_created_idx'),
+        ]
     
     def __str__(self):
         return f"{self.business_name} ({self.email})"
@@ -142,6 +146,10 @@ class Product(models.Model):
         verbose_name = 'Product'
         verbose_name_plural = 'Products'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_active', 'created_at'], name='product_active_created_idx'),
+            models.Index(fields=['category', 'created_at'], name='product_category_created_idx'),
+        ]
     
     def __str__(self):
         return f"{self.name} - {self.vendor.business_name}"
@@ -151,6 +159,92 @@ class Product(models.Model):
         if self.sizes:
             return [s.strip() for s in self.sizes.split(',') if s.strip()]
         return []
+
+    def get_sizes_with_stock(self):
+        """Return list of (size, stock_qty_or_None) for templates.
+
+        If size-wise stock rows exist, returns per-size quantity.
+        Otherwise returns None for each size (legacy behavior).
+        """
+        sizes = self.get_sizes_list()
+        stocks = {}
+        try:
+            # Avoid crashing templates if migrations not applied yet
+            stocks = {s.size: s.quantity for s in self.size_stocks.all()}
+        except Exception:
+            stocks = {}
+
+        has_specific = bool(stocks)
+        if not sizes:
+            return []
+
+        if not has_specific:
+            return [(s, None) for s in sizes]
+        return [(s, int(stocks.get(s, 0))) for s in sizes]
+
+    @property
+    def total_available_quantity(self):
+        """Total available units.
+
+        For size-wise products, sums per-size quantities when available.
+        Otherwise falls back to Product.quantity.
+        """
+        try:
+            if hasattr(self, 'size_stocks'):
+                rows = list(self.size_stocks.all())
+                if rows:
+                    return int(sum(s.quantity for s in rows))
+        except Exception:
+            pass
+        return int(self.quantity)
+
+    def available_quantity_for_size(self, size):
+        """Available quantity for a given size (or global quantity fallback)."""
+        size = (size or '').strip()
+        if not size:
+            return self.total_available_quantity
+
+        try:
+            if hasattr(self, 'size_stocks'):
+                # If size-wise stock is configured, enforce it.
+                # If not configured (no rows), fall back to legacy Product.quantity.
+                rows = list(self.size_stocks.all())
+                if not rows:
+                    return int(self.quantity)
+
+                for row in rows:
+                    if row.size == size:
+                        return int(row.quantity)
+                return 0
+        except Exception:
+            pass
+
+        return int(self.quantity)
+
+    @property
+    def is_in_stock(self):
+        return self.total_available_quantity > 0
+
+
+class ProductSizeStock(models.Model):
+    """Size-wise stock for a product (used when Product.sizes is set)."""
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='size_stocks')
+    size = models.CharField(max_length=50)
+    quantity = models.IntegerField(validators=[MinValueValidator(0)], default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Product Size Stock'
+        verbose_name_plural = 'Product Size Stocks'
+        unique_together = ('product', 'size')
+        ordering = ['size']
+        indexes = [
+            models.Index(fields=['product', 'size'], name='sizestock_product_size_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.product.name} - {self.size}: {self.quantity}"
 
 
 class Order(models.Model):
@@ -180,6 +274,10 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # User notifications (send only once per milestone)
+    user_accepted_email_sent = models.BooleanField(default=False)
+    user_delivered_email_sent = models.BooleanField(default=False)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -189,6 +287,11 @@ class Order(models.Model):
         verbose_name = 'Order'
         verbose_name_plural = 'Orders'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['buyer_email', 'created_at'], name='order_buyer_created_idx'),
+            models.Index(fields=['vendor', 'status', 'created_at'], name='ord_vend_stat_cr_idx'),
+            models.Index(fields=['status', 'created_at'], name='order_status_created_idx'),
+        ]
     
     def __str__(self):
         return f"Order #{self.id} - {self.buyer_name}"
