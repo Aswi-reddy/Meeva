@@ -6,7 +6,8 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Q
-from .models import User
+from django.utils import timezone
+from .models import User, PasswordResetOTP, Wishlist
 from vendor.models import Product, Order
 
 
@@ -79,6 +80,28 @@ def user_register(request):
                 email=email,
                 password=make_password(password),
             )
+
+            # Send welcome email to the new user
+            try:
+                send_mail(
+                    subject='🎉 Welcome to Meeva!',
+                    message=(
+                        f'Hello {first_name},\n\n'
+                        f'Welcome to Meeva! Your account has been created successfully.\n\n'
+                        f'Account Details:\n'
+                        f'• Name: {first_name} {last_name}\n'
+                        f'• Email: {email}\n\n'
+                        f'You can now log in and start shopping from our marketplace.\n\n'
+                        f'Login here: http://localhost:8000/user/login/\n\n'
+                        f'Happy Shopping!\n'
+                        f'Team Meeva'
+                    ),
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass  # Don't block registration if email fails
             
             messages.success(request, 'Registration successful! Please login.')
             return redirect('user_login')
@@ -91,7 +114,7 @@ def user_register(request):
 
 def browse_products(request):
     """Browse all products (public view - no login required)"""
-    all_products = Product.objects.filter(is_active=True)
+    all_products = Product.objects.filter(is_active=True).select_related('vendor').prefetch_related('size_stocks')
     
     # Search
     search_query = request.GET.get('q', '').strip()
@@ -115,10 +138,22 @@ def browse_products(request):
         all_products = all_products.order_by('-created_at')
     
     cart = request.session.get('cart', {})
+    
+    # Get wishlist product IDs for the logged-in user
+    wishlist_product_ids = []
+    if request.session.get('user_logged_in'):
+        user_id = request.session.get('user_id')
+        if user_id:
+            wishlist_product_ids = list(
+                Wishlist.objects.filter(user_id=user_id).values_list('product_id', flat=True)
+            )
+    
     context = {
         'products': all_products,
         'is_user_logged_in': request.session.get('user_logged_in', False),
         'cart_count': sum(item['quantity'] for item in cart.values()),
+        'wishlist_count': len(wishlist_product_ids),
+        'wishlist_product_ids': wishlist_product_ids,
         'categories': Product.CATEGORY_CHOICES,
         'current_category': category_filter,
         'current_sort': sort_by,
@@ -171,7 +206,15 @@ def checkout(request, product_id):
                 return render(request, 'users/checkout.html', {'product': product})
             
             if quantity > product.quantity:
-                messages.error(request, f'Only {product.quantity} units available.')
+                # Validate against size-wise stock when available
+                available = product.available_quantity_for_size(selected_size) if selected_size else product.total_available_quantity
+                messages.error(request, f'Only {available} units available.')
+                return render(request, 'users/checkout.html', {'product': product})
+
+            # Validate size-wise stock (if configured)
+            available = product.available_quantity_for_size(selected_size) if selected_size else product.total_available_quantity
+            if available < quantity:
+                messages.error(request, f'Only {available} units available.')
                 return render(request, 'users/checkout.html', {'product': product})
             
             # Calculate total price
@@ -191,10 +234,8 @@ def checkout(request, product_id):
                 total_price=total_price,
                 status='pending'
             )
-            
-            # Update product quantity
-            product.quantity -= quantity
-            product.save()
+
+            # Stock is deducted only when vendor accepts the order.
             
             # Send email to vendor
             send_order_notification_email(order)
@@ -304,14 +345,29 @@ def add_to_cart(request, product_id):
         messages.info(request, 'Please login to add items to your cart.')
         return redirect('user_login')
 
-    product = get_object_or_404(Product, id=product_id, is_active=True)
+    product = (
+        Product.objects.filter(id=product_id, is_active=True)
+        .select_related('vendor')
+        .prefetch_related('size_stocks')
+        .first()
+    )
+    if not product:
+        messages.error(request, 'Product not found.')
+        return redirect('browse_products')
     
     # Get selected size
     selected_size = request.GET.get('size', '').strip()
     
     # If product has sizes but none selected, redirect back with error
-    if product.sizes and not selected_size:
+    if product.get_sizes_list() and not selected_size:
         messages.warning(request, f'Please select a size for "{product.name}".')
+        next_page = request.META.get('HTTP_REFERER', 'browse_products')
+        return redirect(next_page)
+
+    # Validate stock for selected size (or global fallback)
+    available = product.available_quantity_for_size(selected_size) if selected_size else product.total_available_quantity
+    if available < 1:
+        messages.warning(request, f'"{product.name}" is out of stock.')
         next_page = request.META.get('HTTP_REFERER', 'browse_products')
         return redirect(next_page)
     
@@ -320,11 +376,11 @@ def add_to_cart(request, product_id):
     key = f"{product_id}-{selected_size}" if selected_size else str(product_id)
 
     if key in cart:
-        if cart[key]['quantity'] < product.quantity:
+        if cart[key]['quantity'] < available:
             cart[key]['quantity'] += 1
             messages.success(request, f'"{product.name}" quantity updated in cart.')
         else:
-            messages.warning(request, f'Only {product.quantity} units available.')
+            messages.warning(request, f'Only {available} units available.')
     else:
         cart[key] = {
             'product_id': product_id,
@@ -334,7 +390,7 @@ def add_to_cart(request, product_id):
             'image': product.image.url if product.image else None,
             'vendor_id': product.vendor.id,
             'vendor_name': product.vendor.business_name,
-            'max_qty': product.quantity,
+            'max_qty': available,
             'size': selected_size,
         }
         size_msg = f' (Size: {selected_size})' if selected_size else ''
@@ -391,10 +447,21 @@ def view_cart(request):
             errors = []
             for key, item in list(cart.items()):
                 try:
-                    product = Product.objects.get(id=item['product_id'], is_active=True)
+                    product = (
+                        Product.objects.filter(id=item['product_id'], is_active=True)
+                        .select_related('vendor')
+                        .prefetch_related('size_stocks')
+                        .first()
+                    )
+                    if not product:
+                        errors.append(f"{item['name']} is no longer available.")
+                        continue
                     qty = item['quantity']
-                    if qty > product.quantity:
-                        qty = product.quantity
+
+                    selected_size = (item.get('size') or '').strip()
+                    available = product.available_quantity_for_size(selected_size) if selected_size else product.total_available_quantity
+                    if qty > available:
+                        qty = available
                     if qty < 1:
                         errors.append(f"{item['name']} is out of stock.")
                         continue
@@ -411,12 +478,8 @@ def view_cart(request):
                         total_price=product.price * qty,
                         status='pending'
                     )
-                    product.quantity -= qty
-                    product.save()
                     send_order_notification_email(order)
                     created_orders.append(order)
-                except Product.DoesNotExist:
-                    errors.append(f"{item['name']} is no longer available.")
                 except Exception as e:
                     errors.append(str(e))
 
@@ -490,3 +553,195 @@ def my_orders(request):
     }
     return render(request, 'users/my_orders.html', context)
 
+
+# ==================== FORGOT PASSWORD VIEWS ====================
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def user_forgot_password(request):
+    """Step 1: Take email and send OTP"""
+    if request.method == "POST":
+        email = request.POST.get('email', '').strip()
+        
+        if not email:
+            messages.error(request, 'Please enter your email address.')
+            return render(request, 'users/forgot_password.html')
+        
+        # Check if email exists in User table
+        try:
+            user = User.objects.get(email=email, is_active=True)
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with this email address.')
+            return render(request, 'users/forgot_password.html')
+        
+        # Generate OTP
+        otp_code = PasswordResetOTP.generate_otp()
+        
+        # Delete any previous OTPs for this email & role
+        PasswordResetOTP.objects.filter(email=email, role='user').delete()
+        
+        # Create new OTP
+        PasswordResetOTP.objects.create(
+            email=email,
+            otp=otp_code,
+            role='user',
+            expires_at=timezone.now() + timezone.timedelta(minutes=10),
+        )
+        
+        # Send OTP via email
+        try:
+            send_mail(
+                subject='🔐 Password Reset OTP - Meeva',
+                message=f'Hello {user.first_name},\n\nYour OTP for password reset is: {otp_code}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.\n\nTeam Meeva',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            request.session['reset_email'] = email
+            request.session['reset_role'] = 'user'
+            messages.success(request, 'OTP sent to your email. Please check your inbox.')
+            return redirect('user_verify_otp')
+        except Exception as e:
+            messages.error(request, f'Failed to send OTP email. Please try again later.')
+            return render(request, 'users/forgot_password.html')
+    
+    return render(request, 'users/forgot_password.html')
+
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def user_verify_otp(request):
+    """Step 2: Verify OTP"""
+    email = request.session.get('reset_email')
+    role = request.session.get('reset_role')
+    
+    if not email or role != 'user':
+        messages.error(request, 'Session expired. Please start again.')
+        return redirect('user_forgot_password')
+    
+    if request.method == "POST":
+        entered_otp = request.POST.get('otp', '').strip()
+        
+        if not entered_otp:
+            messages.error(request, 'Please enter the OTP.')
+            return render(request, 'users/verify_otp.html', {'email': email})
+        
+        try:
+            otp_record = PasswordResetOTP.objects.get(
+                email=email, role='user', otp=entered_otp, is_verified=False
+            )
+            
+            if otp_record.is_expired:
+                messages.error(request, 'OTP has expired. Please request a new one.')
+                return redirect('user_forgot_password')
+            
+            # Mark OTP as verified
+            otp_record.is_verified = True
+            otp_record.save()
+            
+            request.session['otp_verified'] = True
+            messages.success(request, 'OTP verified! Please set your new password.')
+            return redirect('user_reset_password')
+            
+        except PasswordResetOTP.DoesNotExist:
+            messages.error(request, 'Invalid OTP. Please try again.')
+    
+    return render(request, 'users/verify_otp.html', {'email': email})
+
+
+@csrf_protect
+@require_http_methods(["GET", "POST"])
+def user_reset_password(request):
+    """Step 3: Reset password"""
+    email = request.session.get('reset_email')
+    role = request.session.get('reset_role')
+    otp_verified = request.session.get('otp_verified')
+    
+    if not email or role != 'user' or not otp_verified:
+        messages.error(request, 'Session expired. Please start again.')
+        return redirect('user_forgot_password')
+    
+    if request.method == "POST":
+        new_password = request.POST.get('new_password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
+        
+        if not new_password or not confirm_password:
+            messages.error(request, 'Both password fields are required.')
+            return render(request, 'users/reset_password.html')
+        
+        if new_password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'users/reset_password.html')
+        
+        if len(new_password) < 6:
+            messages.error(request, 'Password must be at least 6 characters long.')
+            return render(request, 'users/reset_password.html')
+        
+        try:
+            user = User.objects.get(email=email, is_active=True)
+            user.password = make_password(new_password)
+            user.save()
+            
+            # Cleanup OTPs and session
+            PasswordResetOTP.objects.filter(email=email, role='user').delete()
+            request.session.pop('reset_email', None)
+            request.session.pop('reset_role', None)
+            request.session.pop('otp_verified', None)
+            
+            messages.success(request, 'Password updated successfully! Please login with your new password.')
+            return redirect('user_login')
+            
+        except User.DoesNotExist:
+            messages.error(request, 'User not found.')
+            return redirect('user_forgot_password')
+    
+    return render(request, 'users/reset_password.html')
+
+
+# ==================== WISHLIST VIEWS ====================
+
+def toggle_wishlist(request, product_id):
+    """Add or remove a product from the user's wishlist"""
+    if not request.session.get('user_logged_in'):
+        messages.info(request, 'Please login to add items to your wishlist.')
+        return redirect('user_login')
+    
+    user_id = request.session.get('user_id')
+    user = User.objects.get(id=user_id)
+    product = get_object_or_404(Product, id=product_id, is_active=True)
+    
+    wishlist_item = Wishlist.objects.filter(user=user, product=product).first()
+    
+    if wishlist_item:
+        wishlist_item.delete()
+        messages.success(request, f'"{product.name}" removed from your wishlist.')
+    else:
+        Wishlist.objects.create(user=user, product=product)
+        messages.success(request, f'"{product.name}" added to your wishlist!')
+    
+    # Redirect back to the same page
+    next_url = request.GET.get('next', request.META.get('HTTP_REFERER', 'browse_products'))
+    return redirect(next_url)
+
+
+def view_wishlist(request):
+    """View all wishlist items"""
+    if not request.session.get('user_logged_in'):
+        messages.info(request, 'Please login to view your wishlist.')
+        return redirect('user_login')
+    
+    user_id = request.session.get('user_id')
+    wishlist_items = (
+        Wishlist.objects.filter(user_id=user_id)
+        .select_related('product', 'product__vendor')
+        .prefetch_related('product__size_stocks')
+    )
+    cart = request.session.get('cart', {})
+    
+    context = {
+        'wishlist_items': wishlist_items,
+        'is_user_logged_in': True,
+        'cart_count': sum(item['quantity'] for item in cart.values()),
+        'wishlist_count': wishlist_items.count(),
+    }
+    return render(request, 'users/wishlist.html', context)

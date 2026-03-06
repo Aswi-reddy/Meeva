@@ -7,6 +7,11 @@ urlpatterns = [
     path('login/', views.vendor_login, name='vendor_login'),
     path('logout/', views.vendor_logout, name='vendor_logout'),
 
+    # Forgot Password
+    path('forgot-password/', views.vendor_forgot_password, name='vendor_forgot_password'),
+    path('verify-otp/', views.vendor_verify_otp, name='vendor_verify_otp'),
+    path('reset-password/', views.vendor_reset_password, name='vendor_reset_password'),
+
     # Vendor Dashboard
     path('dashboard/', views.vendor_dashboard, name='vendor_dashboard'),
 

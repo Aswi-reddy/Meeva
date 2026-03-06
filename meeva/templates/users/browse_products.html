@@ -128,6 +128,18 @@
           >My Orders</a
         >
         <a
+          href="{% url 'view_wishlist' %}"
+          class="relative text-white/70 hover:text-white transition"
+        >
+          <i class="fas fa-heart text-lg"></i>
+          {% if wishlist_count > 0 %}
+          <span
+            class="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full"
+            >{{ wishlist_count }}</span
+          >
+          {% endif %}
+        </a>
+        <a
           href="{% url 'view_cart' %}"
           class="relative text-white/70 hover:text-white transition"
         >
@@ -287,8 +299,21 @@
       >
         {% for product in products %}
         <div
-          class="group bg-[#141414] border border-[#222] overflow-hidden hover:border-[#444] transition duration-300 flex flex-col fade-up"
+          class="group bg-[#141414] border border-[#222] overflow-hidden hover:border-[#444] transition duration-300 flex flex-col fade-up relative"
         >
+          <!-- Wishlist Heart Icon -->
+          {% if is_user_logged_in %}
+          <a
+            href="{% url 'toggle_wishlist' product.id %}?next={% url 'browse_products' %}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}"
+            class="absolute top-3 right-3 z-10 w-9 h-9 flex items-center justify-center bg-[#0a0a0a]/70 border border-[#333] hover:border-red-500 transition rounded-full"
+          >
+            {% if product.id in wishlist_product_ids %}
+            <i class="fas fa-heart text-red-500 text-sm"></i>
+            {% else %}
+            <i class="far fa-heart text-[#888] hover:text-red-500 text-sm"></i>
+            {% endif %}
+          </a>
+          {% endif %}
           <div class="w-full aspect-square bg-[#1a1a1a] overflow-hidden">
             {% if product.image %}
             <img
@@ -320,28 +345,49 @@
             <p class="text-[#555] text-xs mb-3 line-clamp-2">
               {{ product.description }}
             </p>
-            {% if product.get_sizes_list %}
-            <div class="mb-3">
-              <p
-                class="text-[#555] text-[10px] uppercase tracking-widest font-semibold mb-2"
-              >
-                Select Size
-              </p>
-              <div class="flex flex-wrap gap-1.5" id="sizes-{{ product.id }}">
-                {% for size in product.get_sizes_list %}
-                <button
-                  type="button"
-                  data-product-id="{{ product.id }}"
-                  data-size="{{ size }}"
-                  class="size-btn size-btn-{{ product.id }} px-2.5 py-1 bg-[#1a1a1a] border border-[#333] text-[#888] text-xs font-semibold hover:border-[#888] hover:text-white transition cursor-pointer"
+            <form
+              method="get"
+              action="{% url 'add_to_cart' product.id %}"
+              class="mt-auto"
+            >
+              {% if product.get_sizes_list %}
+              <div class="mb-3">
+                <p
+                  class="text-[#555] text-[10px] uppercase tracking-widest font-semibold mb-2"
                 >
-                  {{ size }}
-                </button>
-                {% endfor %}
+                  Select Size
+                </p>
+                <div class="flex flex-wrap gap-1.5" id="sizes-{{ product.id }}">
+                  {% for size, stock in product.get_sizes_with_stock %}
+                  <label
+                    class="{% if stock == 0 %}opacity-40 cursor-not-allowed{% else %}cursor-pointer{% endif %}"
+                  >
+                    <input
+                      type="radio"
+                      name="size"
+                      value="{{ size }}"
+                      class="sr-only peer"
+                      {%
+                      if
+                      stock=""
+                      ="0"
+                      %}disabled{%
+                      endif
+                      %}
+                      required
+                      aria-label="Size {{ size }}"
+                    />
+                    <span
+                      class="px-2.5 py-1 bg-[#1a1a1a] border border-[#333] text-[#888] text-xs font-semibold inline-block transition peer-checked:bg-white peer-checked:text-[#0a0a0a] peer-checked:border-white {% if stock == 0 %}{% else %}hover:border-[#888] hover:text-white{% endif %}"
+                    >
+                      {{ size }}
+                    </span>
+                  </label>
+                  {% endfor %}
+                </div>
               </div>
-            </div>
-            {% endif %}
-            <div class="mt-auto">
+              {% endif %}
+
               <div class="flex items-center justify-between mb-3">
                 <span class="text-white font-bold text-lg"
                   >₹{{ product.price }}</span
@@ -350,25 +396,24 @@
                   >{{ product.quantity }} left</span
                 >
               </div>
-              {% if product.quantity > 0 %}
-              <a
-                href="{% url 'add_to_cart' product.id %}"
-                id="cart-btn-{{ product.id }}"
-                data-product-id="{{ product.id }}"
-                data-has-sizes="{{ product.get_sizes_list|length }}"
-                class="cart-btn w-full py-2 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition text-center flex items-center justify-center gap-2"
+
+              {% if product.is_in_stock %}
+              <button
+                type="submit"
+                class="w-full py-2 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition text-center flex items-center justify-center gap-2"
               >
                 <i class="fas fa-cart-plus"></i>Add to Cart
-              </a>
+              </button>
               {% else %}
               <button
+                type="button"
                 disabled
                 class="w-full py-2 bg-[#1a1a1a] text-[#555] font-semibold text-sm cursor-not-allowed border border-[#222]"
               >
                 Out of Stock
               </button>
               {% endif %}
-            </div>
+            </form>
           </div>
         </div>
         {% endfor %}
@@ -382,49 +427,6 @@
     </div>
 
     <script>
-      // Track selected sizes per product
-      const selectedSizes = {};
-
-      // Attach size button listeners
-      document.querySelectorAll(".size-btn").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var productId = this.getAttribute("data-product-id");
-          var size = this.getAttribute("data-size");
-          // Deselect all size buttons for this product
-          document
-            .querySelectorAll(".size-btn-" + productId)
-            .forEach(function (b) {
-              b.classList.remove("bg-white", "text-[#0a0a0a]", "border-white");
-              b.classList.add("bg-[#1a1a1a]", "text-[#888]", "border-[#333]");
-            });
-          // Select clicked button
-          btn.classList.remove("bg-[#1a1a1a]", "text-[#888]", "border-[#333]");
-          btn.classList.add("bg-white", "text-[#0a0a0a]", "border-white");
-          selectedSizes[productId] = size;
-        });
-      });
-
-      // Attach add-to-cart listeners
-      document.querySelectorAll(".cart-btn").forEach(function (link) {
-        link.addEventListener("click", function (event) {
-          var productId = this.getAttribute("data-product-id");
-          var hasSizes = parseInt(this.getAttribute("data-has-sizes"), 10);
-          if (hasSizes > 0 && !selectedSizes[productId]) {
-            event.preventDefault();
-            alert("Please select a size before adding to cart.");
-            return;
-          }
-          if (hasSizes > 0 && selectedSizes[productId]) {
-            event.preventDefault();
-            var url =
-              this.href +
-              "?size=" +
-              encodeURIComponent(selectedSizes[productId]);
-            window.location.href = url;
-          }
-        });
-      });
-
       function applySortFilter(sort) {
         const url = new URL(window.location.href);
         url.searchParams.set("sort", sort);
@@ -435,7 +437,10 @@
       // Navbar background transition on scroll
       window.addEventListener("scroll", function () {
         const nav = document.getElementById("mainNav");
-        const heroHeight = document.querySelector(".hero-bg").offsetHeight;
+        const hero = document.querySelector(".hero-bg");
+        if (!nav || !hero) return;
+
+        const heroHeight = hero.offsetHeight;
         if (window.pageYOffset > heroHeight - 80) {
           nav.style.background = "rgba(10, 10, 10, 0.95)";
         } else {

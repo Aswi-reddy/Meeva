@@ -22,6 +22,9 @@
             <a href="{% url 'browse_products' %}" class="text-[#888] hover:text-white text-sm font-semibold tracking-wide uppercase transition">Products</a>
             {% if is_user_logged_in %}
                 <a href="{% url 'my_orders' %}" class="text-[#888] hover:text-white text-sm font-semibold tracking-wide uppercase transition">My Orders</a>
+                <a href="{% url 'view_wishlist' %}" class="relative text-[#888] hover:text-white transition">
+                    <i class="fas fa-heart text-lg"></i>
+                </a>
                 <a href="{% url 'view_cart' %}" class="relative text-[#888] hover:text-white transition">
                     <i class="fas fa-shopping-cart text-lg"></i>
                 </a>

@@ -1,175 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Checkout - Meeva</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body { font-family: 'Clash Display', sans-serif; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-        .fade-up { animation: fadeUp .5s ease-out both; }
+      body {
+        font-family: "Clash Display", sans-serif;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .fade-up {
+        animation: fadeUp 0.5s ease-out both;
+      }
     </style>
-</head>
-<body class="bg-[#0a0a0a] min-h-screen text-white">
-
+  </head>
+  <body class="bg-[#0a0a0a] min-h-screen text-white">
     <!-- Navbar -->
-    <nav class="bg-[#0a0a0a] border-b border-[#222] px-8 py-5 flex justify-between items-center">
-        <a href="{% url 'browse_products' %}" class="text-xl font-bold tracking-wide text-white hover:opacity-70 transition">MEEVA</a>
-        <div class="flex gap-6 items-center">
-            <a href="{% url 'browse_products' %}" class="text-[#888] hover:text-white text-sm font-semibold tracking-wide uppercase transition">Products</a>
-            {% if is_user_logged_in %}
-                <a href="{% url 'user_logout' %}" class="px-5 py-2 bg-white text-[#0a0a0a] text-sm font-bold tracking-wide uppercase hover:bg-[#e0e0e0] transition">Logout</a>
-            {% else %}
-                <a href="{% url 'user_login' %}" class="px-5 py-2 bg-white text-[#0a0a0a] text-sm font-bold tracking-wide uppercase hover:bg-[#e0e0e0] transition">Get Started</a>
-            {% endif %}
-        </div>
+    <nav
+      class="bg-[#0a0a0a] border-b border-[#222] px-8 py-5 flex justify-between items-center"
+    >
+      <a
+        href="{% url 'browse_products' %}"
+        class="text-xl font-bold tracking-wide text-white hover:opacity-70 transition"
+        >MEEVA</a
+      >
+      <div class="flex gap-6 items-center">
+        <a
+          href="{% url 'browse_products' %}"
+          class="text-[#888] hover:text-white text-sm font-semibold tracking-wide uppercase transition"
+          >Products</a
+        >
+        {% if is_user_logged_in %}
+        <a
+          href="{% url 'user_logout' %}"
+          class="px-5 py-2 bg-white text-[#0a0a0a] text-sm font-bold tracking-wide uppercase hover:bg-[#e0e0e0] transition"
+          >Logout</a
+        >
+        {% else %}
+        <a
+          href="{% url 'user_login' %}"
+          class="px-5 py-2 bg-white text-[#0a0a0a] text-sm font-bold tracking-wide uppercase hover:bg-[#e0e0e0] transition"
+          >Get Started</a
+        >
+        {% endif %}
+      </div>
     </nav>
 
     {% if messages %}
-        <div class="max-w-4xl mx-auto px-6 py-4 space-y-2">
-            {% for message in messages %}
-                <div class="p-3 bg-[#141414] border border-[#222] text-[#ccc] text-sm">{{ message }}</div>
-            {% endfor %}
-        </div>
+    <div class="max-w-4xl mx-auto px-6 py-4 space-y-2">
+      {% for message in messages %}
+      <div class="p-3 bg-[#141414] border border-[#222] text-[#ccc] text-sm">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
     {% endif %}
 
     <div class="max-w-4xl mx-auto px-6 py-12">
-        <div class="mb-8 fade-up">
-            <h1 class="text-3xl font-bold text-white mb-2">CHECKOUT</h1>
-            <p class="text-[#888] text-sm">Complete your purchase</p>
-        </div>
+      <div class="mb-8 fade-up">
+        <h1 class="text-3xl font-bold text-white mb-2">CHECKOUT</h1>
+        <p class="text-[#888] text-sm">Complete your purchase</p>
+      </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 fade-up">
-                <form method="POST" class="bg-[#141414] border border-[#222] p-6 space-y-6">
-                    {% csrf_token %}
-                    <div>
-                        <h2 class="text-lg font-bold text-white mb-4">YOUR DETAILS</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <label for="buyer_name" class="block text-white font-semibold text-sm mb-2">Full Name *</label>
-                                <input type="text" id="buyer_name" name="buyer_name" value="{{ user_name }}" required
-                                    class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
-                                    placeholder="Enter your full name">
-                            </div>
-                            <div>
-                                <label for="buyer_email" class="block text-white font-semibold text-sm mb-2">Email Address *</label>
-                                <input type="email" id="buyer_email" name="buyer_email" value="{{ user_email }}" required
-                                    class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
-                                    placeholder="your.email@example.com">
-                            </div>
-                            <div>
-                                <label for="buyer_phone" class="block text-white font-semibold text-sm mb-2">Phone Number *</label>
-                                <input type="tel" id="buyer_phone" name="buyer_phone" value="{{ user_phone }}" required
-                                    class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
-                                    placeholder="+91 XXXXXXXXXX">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-t border-[#222] pt-6">
-                        <h2 class="text-lg font-bold text-white mb-4">DELIVERY ADDRESS</h2>
-                        <div>
-                            <label for="buyer_address" class="block text-white font-semibold text-sm mb-2">Full Address *</label>
-                            <textarea id="buyer_address" name="buyer_address" required rows="4"
-                                class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition resize-none"
-                                placeholder="Street, City, State, Postal Code">{{ user_address }}</textarea>
-                        </div>
-                    </div>
-                    <div class="border-t border-[#222] pt-6">
-                        <h2 class="text-lg font-bold text-white mb-4">ORDER QUANTITY</h2>
-                        <div class="flex items-center">
-                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ product.quantity }}" required
-                                class="w-24 px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white focus:outline-none focus:border-[#444] transition">
-                            <span class="ml-4 text-[#888] text-sm">Available: {{ product.quantity }} units</span>
-                        </div>
-                    </div>
-                    {% if product.get_sizes_list %}
-                    <div class="border-t border-[#222] pt-6">
-                        <h2 class="text-lg font-bold text-white mb-4">SELECT SIZE</h2>
-                        <div class="flex flex-wrap gap-2">
-                            {% for size in product.get_sizes_list %}
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="size" value="{{ size }}" class="hidden peer" required>
-                                    <span class="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-[#888] text-sm font-semibold inline-block peer-checked:bg-white peer-checked:text-[#0a0a0a] peer-checked:border-white hover:border-[#888] hover:text-white transition">{{ size }}</span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="pt-4 border-t border-[#222]">
-                        <button type="submit"
-                            class="w-full px-6 py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition flex items-center justify-center gap-2">
-                            <i class="fas fa-shopping-cart"></i>Place Order
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Order Summary Sidebar -->
-            <div class="fade-up">
-                <div class="bg-[#141414] border border-[#222] p-6 sticky top-8">
-                    <h2 class="text-lg font-bold text-white mb-6">ORDER SUMMARY</h2>
-                    {% if product.image %}
-                        <div class="mb-4 overflow-hidden">
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-40 object-cover">
-                        </div>
-                    {% else %}
-                        <div class="mb-4 bg-[#1a1a1a] h-40 flex items-center justify-center">
-                            <i class="fas fa-image text-4xl text-[#333]"></i>
-                        </div>
-                    {% endif %}
-                    <div class="mb-6 pb-6 border-b border-[#222]">
-                        <p class="text-[#555] text-xs uppercase tracking-wide mb-2">{{ product.vendor.business_name }}</p>
-                        <h3 class="text-lg font-bold text-white">{{ product.name }}</h3>
-                    </div>
-                    <div class="space-y-3 mb-6">
-                        <div class="flex justify-between text-[#888] text-sm">
-                            <span>Unit Price:</span>
-                            <span class="text-white font-semibold">₹<span id="unit-price">{{ product.price }}</span></span>
-                        </div>
-                        <div class="flex justify-between text-[#888] text-sm">
-                            <span>Quantity:</span>
-                            <span class="text-white font-semibold"><span id="order-quantity">1</span> unit(s)</span>
-                        </div>
-                        <div class="flex justify-between text-lg font-bold text-white pt-3 border-t border-[#222]">
-                            <span>Total:</span>
-                            <span>₹<span id="total-price">{{ product.price }}</span></span>
-                        </div>
-                    </div>
-                    <div class="bg-[#0a0a0a] border border-[#222] p-4">
-                        <p class="text-[#888] text-sm">
-                            <i class="fas fa-truck mr-2 text-[#555]"></i>Estimated delivery in 3-5 business days
-                        </p>
-                    </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 fade-up">
+          <form
+            method="POST"
+            class="bg-[#141414] border border-[#222] p-6 space-y-6"
+          >
+            {% csrf_token %}
+            <div>
+              <h2 class="text-lg font-bold text-white mb-4">YOUR DETAILS</h2>
+              <div class="space-y-4">
+                <div>
+                  <label
+                    for="buyer_name"
+                    class="block text-white font-semibold text-sm mb-2"
+                    >Full Name *</label
+                  >
+                  <input
+                    type="text"
+                    id="buyer_name"
+                    name="buyer_name"
+                    value="{{ user_name }}"
+                    required
+                    class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
+                    placeholder="Enter your full name"
+                  />
                 </div>
+                <div>
+                  <label
+                    for="buyer_email"
+                    class="block text-white font-semibold text-sm mb-2"
+                    >Email Address *</label
+                  >
+                  <input
+                    type="email"
+                    id="buyer_email"
+                    name="buyer_email"
+                    value="{{ user_email }}"
+                    required
+                    class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
+                    placeholder="your.email@example.com"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="buyer_phone"
+                    class="block text-white font-semibold text-sm mb-2"
+                    >Phone Number *</label
+                  >
+                  <input
+                    type="tel"
+                    id="buyer_phone"
+                    name="buyer_phone"
+                    value="{{ user_phone }}"
+                    required
+                    class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition"
+                    placeholder="+91 XXXXXXXXXX"
+                  />
+                </div>
+              </div>
             </div>
+            <div class="border-t border-[#222] pt-6">
+              <h2 class="text-lg font-bold text-white mb-4">
+                DELIVERY ADDRESS
+              </h2>
+              <div>
+                <label
+                  for="buyer_address"
+                  class="block text-white font-semibold text-sm mb-2"
+                  >Full Address *</label
+                >
+                <textarea
+                  id="buyer_address"
+                  name="buyer_address"
+                  required
+                  rows="4"
+                  class="w-full px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white placeholder-[#555] focus:outline-none focus:border-[#444] transition resize-none"
+                  placeholder="Street, City, State, Postal Code"
+                >
+{{ user_address }}</textarea
+                >
+              </div>
+            </div>
+            <div class="border-t border-[#222] pt-6">
+              <h2 class="text-lg font-bold text-white mb-4">ORDER QUANTITY</h2>
+              <div class="flex items-center">
+                <input
+                  type="number"
+                  id="quantity"
+                  name="quantity"
+                  value="1"
+                  min="1"
+                  max="{{ product.quantity }}"
+                  required
+                  class="w-24 px-4 py-2 bg-[#1a1a1a] border border-[#222] text-white focus:outline-none focus:border-[#444] transition"
+                />
+                <span class="ml-4 text-[#888] text-sm"
+                  >Available: {{ product.quantity }} units</span
+                >
+              </div>
+            </div>
+            {% if product.get_sizes_list %}
+            <div class="border-t border-[#222] pt-6">
+              <h2 class="text-lg font-bold text-white mb-4">SELECT SIZE</h2>
+              <div class="flex flex-wrap gap-2">
+                {% for size, stock in product.get_sizes_with_stock %}
+                <label
+                  class="{% if stock == 0 %}cursor-not-allowed opacity-50{% else %}cursor-pointer{% endif %}"
+                >
+                  <input
+                    type="radio"
+                    name="size"
+                    value="{{ size }}"
+                    class="sr-only peer"
+                    required
+                    {%
+                    if
+                    stock=""
+                    ="0"
+                    %}disabled{%
+                    endif
+                    %}
+                    aria-label="Size {{ size }}"
+                  />
+                  <span
+                    class="px-4 py-2 bg-[#1a1a1a] border border-[#333] text-[#888] text-sm font-semibold inline-block peer-checked:bg-white peer-checked:text-[#0a0a0a] peer-checked:border-white transition {% if stock == 0 %}{% else %}hover:border-[#888] hover:text-white{% endif %}"
+                    >{{ size }}</span
+                  >
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            <div class="pt-4 border-t border-[#222]">
+              <button
+                type="submit"
+                class="w-full px-6 py-3 bg-white text-[#0a0a0a] font-bold text-sm uppercase tracking-wide hover:bg-[#e0e0e0] transition flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-shopping-cart"></i>Place Order
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div class="mt-8 text-center">
-            <a href="{% url 'browse_products' %}" class="text-[#888] hover:text-white text-sm transition">
-                <i class="fas fa-arrow-left mr-2"></i>Back to Products
-            </a>
+        <!-- Order Summary Sidebar -->
+        <div class="fade-up">
+          <div class="bg-[#141414] border border-[#222] p-6 sticky top-8">
+            <h2 class="text-lg font-bold text-white mb-6">ORDER SUMMARY</h2>
+            {% if product.image %}
+            <div class="mb-4 overflow-hidden">
+              <img
+                src="{{ product.image.url }}"
+                alt="{{ product.name }}"
+                class="w-full h-40 object-cover"
+              />
+            </div>
+            {% else %}
+            <div
+              class="mb-4 bg-[#1a1a1a] h-40 flex items-center justify-center"
+            >
+              <i class="fas fa-image text-4xl text-[#333]"></i>
+            </div>
+            {% endif %}
+            <div class="mb-6 pb-6 border-b border-[#222]">
+              <p class="text-[#555] text-xs uppercase tracking-wide mb-2">
+                {{ product.vendor.business_name }}
+              </p>
+              <h3 class="text-lg font-bold text-white">{{ product.name }}</h3>
+            </div>
+            <div class="space-y-3 mb-6">
+              <div class="flex justify-between text-[#888] text-sm">
+                <span>Unit Price:</span>
+                <span class="text-white font-semibold"
+                  >₹<span id="unit-price">{{ product.price }}</span></span
+                >
+              </div>
+              <div class="flex justify-between text-[#888] text-sm">
+                <span>Quantity:</span>
+                <span class="text-white font-semibold"
+                  ><span id="order-quantity">1</span> unit(s)</span
+                >
+              </div>
+              <div
+                class="flex justify-between text-lg font-bold text-white pt-3 border-t border-[#222]"
+              >
+                <span>Total:</span>
+                <span>₹<span id="total-price">{{ product.price }}</span></span>
+              </div>
+            </div>
+            <div class="bg-[#0a0a0a] border border-[#222] p-4">
+              <p class="text-[#888] text-sm">
+                <i class="fas fa-truck mr-2 text-[#555]"></i>Estimated delivery
+                in 3-5 business days
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div class="mt-8 text-center">
+        <a
+          href="{% url 'browse_products' %}"
+          class="text-[#888] hover:text-white text-sm transition"
+        >
+          <i class="fas fa-arrow-left mr-2"></i>Back to Products
+        </a>
+      </div>
     </div>
 
     <script>
-        const unitPrice = {{ product.price }};
-        const quantityInput = document.getElementById('quantity');
-        const orderQuantitySpan = document.getElementById('order-quantity');
-        const totalPriceSpan = document.getElementById('total-price');
+      const unitPrice = {{ product.price }};
+      const quantityInput = document.getElementById('quantity');
+      const orderQuantitySpan = document.getElementById('order-quantity');
+      const totalPriceSpan = document.getElementById('total-price');
 
-        function updatePrice() {
-            const quantity = parseInt(quantityInput.value) || 1;
-            const total = unitPrice * quantity;
-            orderQuantitySpan.textContent = quantity;
-            totalPriceSpan.textContent = total.toFixed(2);
-        }
+      function updatePrice() {
+          const quantity = parseInt(quantityInput.value) || 1;
+          const total = unitPrice * quantity;
+          orderQuantitySpan.textContent = quantity;
+          totalPriceSpan.textContent = total.toFixed(2);
+      }
 
-        quantityInput.addEventListener('change', updatePrice);
-        quantityInput.addEventListener('input', updatePrice);
+      quantityInput.addEventListener('change', updatePrice);
+      quantityInput.addEventListener('input', updatePrice);
     </script>
-</body>
+  </body>
 </html>
