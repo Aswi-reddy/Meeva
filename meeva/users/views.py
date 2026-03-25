@@ -3,12 +3,78 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import authenticate, get_user_model, login as django_login, logout as django_logout
+from django.db import IntegrityError
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 from .models import User, PasswordResetOTP, Wishlist
 from vendor.models import Product, Order
+
+
+def _safe_username_from_email(email: str, suffix: str | None = None) -> str:
+    email = (email or '').strip()
+    if suffix:
+        base = f"{email}_{suffix}"
+    else:
+        base = email
+
+    UserModel = get_user_model()
+    max_len = UserModel._meta.get_field('username').max_length
+    return (base or 'user')[:max_len]
+
+
+def _get_or_create_auth_user_for_customer(customer: User):
+    """Return (auth_user, created). Ensures customer.django_user is set."""
+    if getattr(customer, 'django_user_id', None):
+        return customer.django_user, False
+
+    UserModel = get_user_model()
+    email = (customer.email or '').strip()
+    username = _safe_username_from_email(email)
+
+    # Try exact username match first.
+    auth_user = UserModel.objects.filter(username=username).first()
+    if not auth_user:
+        # Fallback: reuse an auth user with same email if present.
+        auth_user = UserModel.objects.filter(email=email).first()
+
+    if auth_user:
+        customer.django_user = auth_user
+        customer.save(update_fields=['django_user'])
+        return auth_user, False
+
+    # Create new auth user. Keep password hash identical to legacy customer.password.
+    auth_user = UserModel(
+        username=username,
+        email=email,
+        first_name=customer.first_name or '',
+        last_name=customer.last_name or '',
+        is_active=bool(customer.is_active),
+    )
+    auth_user.password = customer.password or ''
+
+    try:
+        auth_user.save()
+    except IntegrityError:
+        # Extremely unlikely: username collision (e.g., truncated email). Disambiguate by customer id.
+        auth_user.username = _safe_username_from_email(email, str(customer.id))
+        auth_user.save()
+
+    customer.django_user = auth_user
+    customer.save(update_fields=['django_user'])
+    return auth_user, True
+
+
+def _get_customer_from_request(request):
+    """Return the meeva customer (users.User) linked to the current Django auth user, or None."""
+    if not request.user.is_authenticated:
+        return None
+    try:
+        return request.user.meeva_customer
+    except User.DoesNotExist:
+        return None
 
 
 @csrf_protect
@@ -23,6 +89,24 @@ def user_login(request):
             user = User.objects.get(email=email, is_active=True)
             
             if check_password(password, user.password):
+                # Ensure a corresponding Django auth user exists and is in sync.
+                auth_user, _ = _get_or_create_auth_user_for_customer(user)
+                if auth_user and user.password and auth_user.password != user.password:
+                    auth_user.password = user.password
+                    auth_user.is_active = bool(user.is_active)
+                    auth_user.save(update_fields=['password', 'is_active'])
+
+                # Log in via Django auth (keeps request.user consistent) while preserving legacy sessions.
+                authenticated = None
+                if auth_user:
+                    authenticated = authenticate(request, username=auth_user.username, password=password)
+                if authenticated:
+                    django_login(request, authenticated)
+                elif auth_user:
+                    # Fallback: we already validated password against legacy hash.
+                    auth_user.backend = 'django.contrib.auth.backends.ModelBackend'
+                    django_login(request, auth_user)
+
                 request.session['user_logged_in'] = True
                 request.session['user_email'] = email
                 request.session['user_id'] = user.id
@@ -73,13 +157,34 @@ def user_register(request):
             if User.objects.filter(email=email).exists():
                 messages.error(request, 'Email already registered. Please login.')
                 return redirect('user_login')
-            
+
+            password_hash = make_password(password)
             user = User.objects.create(
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
-                password=make_password(password),
+                password=password_hash,
             )
+
+            # Create corresponding Django auth user (username=email) and link it.
+            UserModel = get_user_model()
+            username = _safe_username_from_email(email)
+            auth_user = UserModel(
+                username=username,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                is_active=True,
+            )
+            auth_user.password = password_hash
+            try:
+                auth_user.save()
+            except IntegrityError:
+                auth_user.username = _safe_username_from_email(email, str(user.id))
+                auth_user.save()
+
+            user.django_user = auth_user
+            user.save(update_fields=['django_user'])
 
             # Send welcome email to the new user
             try:
@@ -141,16 +246,15 @@ def browse_products(request):
     
     # Get wishlist product IDs for the logged-in user
     wishlist_product_ids = []
-    if request.session.get('user_logged_in'):
-        user_id = request.session.get('user_id')
-        if user_id:
-            wishlist_product_ids = list(
-                Wishlist.objects.filter(user_id=user_id).values_list('product_id', flat=True)
-            )
+    customer = _get_customer_from_request(request)
+    if customer:
+        wishlist_product_ids = list(
+            Wishlist.objects.filter(user_id=customer.id).values_list('product_id', flat=True)
+        )
     
     context = {
         'products': all_products,
-        'is_user_logged_in': request.session.get('user_logged_in', False),
+        'is_user_logged_in': request.user.is_authenticated,
         'cart_count': sum(item['quantity'] for item in cart.values()),
         'wishlist_count': len(wishlist_product_ids),
         'wishlist_product_ids': wishlist_product_ids,
@@ -164,6 +268,10 @@ def browse_products(request):
 
 def user_logout(request):
     """Logout user"""
+    try:
+        django_logout(request)
+    except Exception:
+        pass
     request.session.flush()
     messages.success(request, 'Successfully logged out.')
     return redirect('browse_products')
@@ -173,7 +281,7 @@ def user_logout(request):
 def checkout(request, product_id):
     """Checkout page to collect buyer details and place order"""
     # If user is not logged in, redirect to login with next parameter
-    if not request.session.get('user_logged_in'):
+    if not request.user.is_authenticated:
         request.session['next_checkout_product_id'] = product_id
         messages.info(request, 'Please login to proceed with your purchase.')
         return redirect('user_login')
@@ -257,13 +365,12 @@ def checkout(request, product_id):
     user_phone = ''
     user_address = ''
     
-    if request.session.get('user_logged_in'):
-        user_id = request.session.get('user_id')
-        user = User.objects.get(id=user_id)
-        user_email = user.email
-        user_name = f"{user.first_name} {user.last_name}"
-        user_phone = user.phone
-        user_address = user.address
+    customer = _get_customer_from_request(request)
+    if customer:
+        user_email = customer.email
+        user_name = f"{customer.first_name} {customer.last_name}"
+        user_phone = customer.phone
+        user_address = customer.address
     
     context = {
         'product': product,
@@ -271,7 +378,7 @@ def checkout(request, product_id):
         'user_name': user_name,
         'user_phone': user_phone,
         'user_address': user_address,
-        'is_user_logged_in': request.session.get('user_logged_in', False),
+        'is_user_logged_in': request.user.is_authenticated,
     }
     
     return render(request, 'users/checkout.html', context)
@@ -283,7 +390,7 @@ def order_confirmation(request, order_id):
     
     context = {
         'order': order,
-        'is_user_logged_in': request.session.get('user_logged_in', False),
+        'is_user_logged_in': request.user.is_authenticated,
     }
     
     return render(request, 'users/order_confirmation.html', context)
@@ -340,7 +447,7 @@ def cart_count(request):
 
 def add_to_cart(request, product_id):
     """Add a product to the session cart (must be logged in)"""
-    if not request.session.get('user_logged_in'):
+    if not request.user.is_authenticated:
         request.session['redirect_after_login'] = 'cart'
         messages.info(request, 'Please login to add items to your cart.')
         return redirect('user_login')
@@ -414,7 +521,7 @@ def remove_from_cart(request, product_id):
 
 def view_cart(request):
     """Display cart and process order placement"""
-    if not request.session.get('user_logged_in'):
+    if not request.user.is_authenticated:
         request.session['redirect_after_login'] = 'cart'
         messages.info(request, 'Please login to view your cart.')
         return redirect('user_login')
@@ -495,17 +602,12 @@ def view_cart(request):
 
     # Pre-fill user details
     user_name = user_email_val = user_phone = user_address = ''
-    user_id = request.session.get('user_id')
-    if user_id:
-        from .models import User as UserModel
-        try:
-            u = UserModel.objects.get(id=user_id)
-            user_name = f"{u.first_name} {u.last_name}"
-            user_email_val = u.email
-            user_phone = u.phone
-            user_address = u.address
-        except Exception:
-            pass
+    customer = _get_customer_from_request(request)
+    if customer:
+        user_name = f"{customer.first_name} {customer.last_name}"
+        user_email_val = customer.email
+        user_phone = customer.phone
+        user_address = customer.address
 
     context = {
         'cart_items': cart_items,
@@ -526,7 +628,7 @@ def cart_order_success(request):
     orders = Order.objects.filter(id__in=order_ids) if order_ids else []
     context = {
         'orders': orders,
-        'is_user_logged_in': request.session.get('user_logged_in', False),
+        'is_user_logged_in': request.user.is_authenticated,
         'cart_count': 0,
     }
     return render(request, 'users/cart_order_success.html', context)
@@ -534,13 +636,15 @@ def cart_order_success(request):
 
 def my_orders(request):
     """Display user's orders (must be logged in)"""
-    if not request.session.get('user_logged_in'):
+    if not request.user.is_authenticated:
         messages.info(request, 'Please login to view your orders.')
         return redirect('user_login')
 
-    user_id = request.session.get('user_id')
-    user = get_object_or_404(User, id=user_id)
-    user_email = user.email
+    customer = _get_customer_from_request(request)
+    if not customer:
+        messages.info(request, 'Please login to view your orders.')
+        return redirect('user_login')
+    user_email = customer.email
 
     # Get all orders placed by this user's email
     orders = Order.objects.filter(buyer_email=user_email).order_by('-created_at')
@@ -679,8 +783,16 @@ def user_reset_password(request):
         
         try:
             user = User.objects.get(email=email, is_active=True)
-            user.password = make_password(new_password)
-            user.save()
+            password_hash = make_password(new_password)
+            user.password = password_hash
+            user.save(update_fields=['password', 'updated_at'])
+
+            # Keep Django auth user in sync.
+            auth_user, _ = _get_or_create_auth_user_for_customer(user)
+            if auth_user:
+                auth_user.password = password_hash
+                auth_user.is_active = bool(user.is_active)
+                auth_user.save(update_fields=['password', 'is_active'])
             
             # Cleanup OTPs and session
             PasswordResetOTP.objects.filter(email=email, role='user').delete()
@@ -702,12 +814,15 @@ def user_reset_password(request):
 
 def toggle_wishlist(request, product_id):
     """Add or remove a product from the user's wishlist"""
-    if not request.session.get('user_logged_in'):
+    if not request.user.is_authenticated:
         messages.info(request, 'Please login to add items to your wishlist.')
         return redirect('user_login')
     
-    user_id = request.session.get('user_id')
-    user = User.objects.get(id=user_id)
+    customer = _get_customer_from_request(request)
+    if not customer:
+        messages.info(request, 'Please login to add items to your wishlist.')
+        return redirect('user_login')
+    user = customer
     product = get_object_or_404(Product, id=product_id, is_active=True)
     
     wishlist_item = Wishlist.objects.filter(user=user, product=product).first()
@@ -726,13 +841,16 @@ def toggle_wishlist(request, product_id):
 
 def view_wishlist(request):
     """View all wishlist items"""
-    if not request.session.get('user_logged_in'):
+    if not request.user.is_authenticated:
         messages.info(request, 'Please login to view your wishlist.')
         return redirect('user_login')
     
-    user_id = request.session.get('user_id')
+    customer = _get_customer_from_request(request)
+    if not customer:
+        messages.info(request, 'Please login to view your wishlist.')
+        return redirect('user_login')
     wishlist_items = (
-        Wishlist.objects.filter(user_id=user_id)
+        Wishlist.objects.filter(user_id=customer.id)
         .select_related('product', 'product__vendor')
         .prefetch_related('product__size_stocks')
     )

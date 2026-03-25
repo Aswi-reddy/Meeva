@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from decimal import Decimal
 import random
@@ -21,6 +22,13 @@ class Vendor(models.Model):
     # Basic Information
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True, max_length=255)
+    django_user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='meeva_vendor',
+    )
     phone = models.CharField(
         max_length=15,
         validators=[RegexValidator(r'^\+?1?\d{9,15}$', 'Enter a valid phone number')]

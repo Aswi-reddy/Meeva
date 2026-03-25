@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate, get_user_model, login as django_login, logout as django_logout
+from django.db import IntegrityError
 from django.utils import timezone
 from .models import Admin
 from vendor.models import Vendor
@@ -12,6 +14,81 @@ from vendor.emails import (
     send_vendor_suspension_email,
     send_vendor_reactivation_email
 )
+
+
+def _safe_username_from_email(email: str, suffix: str | None = None) -> str:
+    email = (email or '').strip()
+    base = f"{email}_{suffix}" if suffix else email
+    UserModel = get_user_model()
+    max_len = UserModel._meta.get_field('username').max_length
+    return (base or 'user')[:max_len]
+
+
+def _get_or_create_auth_user_for_admin(admin: Admin):
+    """Return (auth_user, created). Ensures admin.django_user is set."""
+    if getattr(admin, 'django_user_id', None):
+        return admin.django_user, False
+
+    UserModel = get_user_model()
+    email = (admin.email or '').strip()
+    username = _safe_username_from_email(email)
+
+    auth_user = UserModel.objects.filter(username=username).first()
+    if not auth_user:
+        auth_user = UserModel.objects.filter(email=email).first()
+
+    if auth_user:
+        admin.django_user = auth_user
+        admin.save(update_fields=['django_user'])
+        return auth_user, False
+
+    auth_user = UserModel(
+        username=username,
+        email=email,
+        is_active=bool(getattr(admin, 'is_active', True)),
+        is_staff=True,
+        is_superuser=False,
+    )
+    auth_user.password = admin.password or ''
+    try:
+        auth_user.save()
+    except IntegrityError:
+        auth_user.username = _safe_username_from_email(email, str(admin.id))
+        auth_user.save()
+
+    admin.django_user = auth_user
+    admin.save(update_fields=['django_user'])
+    return auth_user, True
+
+
+def check_admin_login(request):
+    """Helper: ensure admin is authenticated via Django auth (with legacy-session fallback)."""
+    # Primary: Django auth session + OneToOne link
+    if getattr(request, 'user', None) and request.user.is_authenticated:
+        admin = getattr(request.user, 'meeva_core_admin', None)
+        if admin and getattr(admin, 'is_active', True):
+            request.session['admin_logged_in'] = True
+            request.session['admin_email'] = admin.email
+            request.session['admin_id'] = admin.id
+            return admin
+
+    # Fallback: legacy session (best-effort bridge into Django auth)
+    admin_id = request.session.get('admin_id')
+    if request.session.get('admin_logged_in') and admin_id:
+        admin = Admin.objects.filter(id=admin_id, is_active=True).first()
+        if admin:
+            auth_user, _ = _get_or_create_auth_user_for_admin(admin)
+            if auth_user:
+                auth_user.backend = 'django.contrib.auth.backends.ModelBackend'
+                django_login(request, auth_user)
+
+            request.session['admin_logged_in'] = True
+            request.session['admin_email'] = admin.email
+            request.session['admin_id'] = admin.id
+            return admin
+
+    messages.warning(request, 'Please login first.')
+    return None
 
 
 @csrf_protect
@@ -25,6 +102,22 @@ def admin_login(request):
         try:
             admin = Admin.objects.get(email=email, is_active=True)
             if check_password(password, admin.password):
+                auth_user, _ = _get_or_create_auth_user_for_admin(admin)
+                if auth_user and admin.password and auth_user.password != admin.password:
+                    auth_user.password = admin.password
+                    auth_user.is_active = bool(admin.is_active)
+                    auth_user.is_staff = True
+                    auth_user.save(update_fields=['password', 'is_active', 'is_staff'])
+
+                authenticated = None
+                if auth_user:
+                    authenticated = authenticate(request, username=auth_user.username, password=password)
+                if authenticated:
+                    django_login(request, authenticated)
+                elif auth_user:
+                    auth_user.backend = 'django.contrib.auth.backends.ModelBackend'
+                    django_login(request, auth_user)
+
                 # Set session to mark admin as logged in
                 request.session['admin_logged_in'] = True
                 request.session['admin_email'] = email
@@ -40,10 +133,8 @@ def admin_login(request):
 
 
 def admin_dashboard(request):
-    
-    # Check if admin is logged in
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     # Get vendor statistics
@@ -54,7 +145,7 @@ def admin_dashboard(request):
     total_vendors = Vendor.objects.count()
     
     context = {
-        'admin_email': request.session.get('admin_email', 'Admin'),
+        'admin_email': admin.email,
         'pending_count': pending_count,
         'approved_count': approved_count,
         'rejected_count': rejected_count,
@@ -69,6 +160,10 @@ def admin_logout(request):
     """
     Logout admin - clear session
     """
+    try:
+        django_logout(request)
+    except Exception:
+        pass
     request.session.flush()
     messages.success(request, 'Successfully logged out.')
     return redirect('admin_login')
@@ -78,14 +173,14 @@ def admin_logout(request):
 
 def pending_vendors(request):
     """List all pending vendor applications"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     vendors = Vendor.objects.filter(status='pending').order_by('-created_at')
     
     context = {
-        'admin_email': request.session.get('admin_email'),
+        'admin_email': admin.email,
         'vendors': vendors,
         'page_title': 'Pending Vendor Applications',
     }
@@ -95,8 +190,8 @@ def pending_vendors(request):
 
 def all_vendors(request):
     """List all vendors with filtering"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     # Get filter parameter
@@ -108,7 +203,7 @@ def all_vendors(request):
         vendors = Vendor.objects.filter(status=status_filter).order_by('-created_at')
     
     context = {
-        'admin_email': request.session.get('admin_email'),
+        'admin_email': admin.email,
         'vendors': vendors,
         'status_filter': status_filter,
         'page_title': 'All Vendors',
@@ -119,14 +214,14 @@ def all_vendors(request):
 
 def vendor_detail(request, vendor_id):
     """View detailed information about a vendor including documents"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     vendor = get_object_or_404(Vendor, id=vendor_id)
     
     context = {
-        'admin_email': request.session.get('admin_email'),
+        'admin_email': admin.email,
         'vendor': vendor,
     }
     
@@ -136,12 +231,12 @@ def vendor_detail(request, vendor_id):
 @require_http_methods(["POST"])
 def approve_vendor(request, vendor_id):
     """Approve a vendor application"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     vendor = get_object_or_404(Vendor, id=vendor_id)
-    admin_email = request.session.get('admin_email')
+    admin_email = admin.email
     
     vendor.status = 'approved'
     vendor.approved_by = admin_email
@@ -163,8 +258,8 @@ def approve_vendor(request, vendor_id):
 @require_http_methods(["POST"])
 def reject_vendor(request, vendor_id):
     """Reject a vendor application"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     vendor = get_object_or_404(Vendor, id=vendor_id)
@@ -188,8 +283,8 @@ def reject_vendor(request, vendor_id):
 @require_http_methods(["POST"])
 def suspend_vendor(request, vendor_id):
     """Suspend an approved vendor"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     vendor = get_object_or_404(Vendor, id=vendor_id)
@@ -212,8 +307,8 @@ def suspend_vendor(request, vendor_id):
 @require_http_methods(["POST"])
 def activate_vendor(request, vendor_id):
     """Activate a suspended vendor"""
-    if not request.session.get('admin_logged_in'):
-        messages.warning(request, 'Please login first.')
+    admin = check_admin_login(request)
+    if not admin:
         return redirect('admin_login')
     
     vendor = get_object_or_404(Vendor, id=vendor_id)

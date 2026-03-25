@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import authenticate, get_user_model, login as django_login, logout as django_logout
+from django.db import IntegrityError
 from django.db import transaction
 from django.db.models import Sum, Count, Q
 from django.core.mail import send_mail
@@ -15,6 +17,63 @@ from .emails import (
     send_user_order_delivered_email,
 )
 from users.models import PasswordResetOTP
+
+
+def _safe_username_from_email(email: str, suffix: str | None = None) -> str:
+    email = (email or '').strip()
+    base = f"{email}_{suffix}" if suffix else email
+    UserModel = get_user_model()
+    max_len = UserModel._meta.get_field('username').max_length
+    return (base or 'user')[:max_len]
+
+
+def _split_name(full_name: str):
+    full_name = (full_name or '').strip()
+    if not full_name:
+        return '', ''
+    parts = [p for p in full_name.split(' ') if p]
+    if len(parts) == 1:
+        return parts[0], ''
+    return parts[0], ' '.join(parts[1:])
+
+
+def _get_or_create_auth_user_for_vendor(vendor: Vendor):
+    """Return (auth_user, created). Ensures vendor.django_user is set."""
+    if getattr(vendor, 'django_user_id', None):
+        return vendor.django_user, False
+
+    UserModel = get_user_model()
+    email = (vendor.email or '').strip()
+    username = _safe_username_from_email(email)
+
+    auth_user = UserModel.objects.filter(username=username).first()
+    if not auth_user:
+        auth_user = UserModel.objects.filter(email=email).first()
+
+    if auth_user:
+        vendor.django_user = auth_user
+        vendor.save(update_fields=['django_user'])
+        return auth_user, False
+
+    first_name, last_name = _split_name(getattr(vendor, 'full_name', ''))
+    auth_user = UserModel(
+        username=username,
+        email=email,
+        first_name=first_name,
+        last_name=last_name,
+        is_active=bool(getattr(vendor, 'is_active', True)),
+    )
+    auth_user.password = vendor.password or ''
+
+    try:
+        auth_user.save()
+    except IntegrityError:
+        auth_user.username = _safe_username_from_email(email, str(vendor.id))
+        auth_user.save()
+
+    vendor.django_user = auth_user
+    vendor.save(update_fields=['django_user'])
+    return auth_user, True
 
 
 def _parse_size_stock_input(raw_text):
@@ -146,11 +205,12 @@ def vendor_register(request):
                 return redirect('vendor_login')
             
             # Create vendor
+            password_hash = make_password(password)
             vendor = Vendor.objects.create(
                 full_name=request.POST.get('full_name'),
                 email=request.POST.get('email'),
                 phone=request.POST.get('phone'),
-                password=make_password(password),
+                password=password_hash,
                 business_name=request.POST.get('business_name'),
                 business_address=request.POST.get('business_address'),
                 business_description=request.POST.get('business_description', ''),
@@ -166,6 +226,26 @@ def vendor_register(request):
                 license_image=request.FILES.get('license_image'),
                 status='pending'
             )
+
+            # Create corresponding Django auth user and link it.
+            UserModel = get_user_model()
+            username = _safe_username_from_email(vendor.email)
+            first_name, last_name = _split_name(vendor.full_name)
+            auth_user = UserModel(
+                username=username,
+                email=vendor.email,
+                first_name=first_name,
+                last_name=last_name,
+                is_active=bool(vendor.is_active),
+            )
+            auth_user.password = password_hash
+            try:
+                auth_user.save()
+            except IntegrityError:
+                auth_user.username = _safe_username_from_email(vendor.email, str(vendor.id))
+                auth_user.save()
+            vendor.django_user = auth_user
+            vendor.save(update_fields=['django_user'])
             
             # Send registration confirmation email
             email_sent = send_vendor_registration_email(vendor)
@@ -211,6 +291,23 @@ def vendor_login(request):
             elif check_password(password, vendor.password):
                 # Allow login for pending and approved vendors
                 if vendor.status in ['pending', 'approved']:
+                    # Ensure corresponding Django auth user exists and is in sync.
+                    auth_user, _ = _get_or_create_auth_user_for_vendor(vendor)
+                    if auth_user and vendor.password and auth_user.password != vendor.password:
+                        auth_user.password = vendor.password
+                        auth_user.is_active = bool(vendor.is_active)
+                        auth_user.save(update_fields=['password', 'is_active'])
+
+                    # Log in via Django auth (keeps request.user consistent) while preserving legacy sessions.
+                    authenticated = None
+                    if auth_user:
+                        authenticated = authenticate(request, username=auth_user.username, password=password)
+                    if authenticated:
+                        django_login(request, authenticated)
+                    elif auth_user:
+                        auth_user.backend = 'django.contrib.auth.backends.ModelBackend'
+                        django_login(request, auth_user)
+
                     request.session['vendor_logged_in'] = True
                     request.session['vendor_email'] = vendor.email
                     request.session['vendor_id'] = vendor.id
@@ -226,11 +323,9 @@ def vendor_login(request):
 
 def vendor_dashboard(request):
     """Vendor dashboard - overview with statistics"""
-    if not request.session.get('vendor_logged_in'):
-        messages.warning(request, 'Please login first.')
+    vendor = check_vendor_login(request)
+    if not vendor:
         return redirect('vendor_login')
-    
-    vendor = Vendor.objects.get(id=request.session.get('vendor_id'))
     
     # Get statistics (excluding cancelled orders)
     total_products = vendor.products.count()
@@ -254,6 +349,10 @@ def vendor_dashboard(request):
 
 def vendor_logout(request):
     """Logout vendor"""
+    try:
+        django_logout(request)
+    except Exception:
+        pass
     request.session.flush()
     messages.success(request, 'Successfully logged out.')
     return redirect('vendor_login')
@@ -261,10 +360,33 @@ def vendor_logout(request):
 
 def check_vendor_login(request):
     """Helper function to check if vendor is logged in"""
-    if not request.session.get('vendor_logged_in'):
-        messages.warning(request, 'Please login first.')
-        return None
-    return Vendor.objects.get(id=request.session.get('vendor_id'))
+    # Primary: Django auth session + OneToOne link
+    if getattr(request, 'user', None) and request.user.is_authenticated:
+        vendor = getattr(request.user, 'meeva_vendor', None)
+        if vendor and getattr(vendor, 'is_active', True):
+            # Preserve legacy session keys for existing templates/flows
+            request.session['vendor_logged_in'] = True
+            request.session['vendor_email'] = vendor.email
+            request.session['vendor_id'] = vendor.id
+            return vendor
+
+    # Fallback: legacy session (best-effort bridge into Django auth)
+    vendor_id = request.session.get('vendor_id')
+    if request.session.get('vendor_logged_in') and vendor_id:
+        vendor = Vendor.objects.filter(id=vendor_id, is_active=True).first()
+        if vendor:
+            auth_user, _ = _get_or_create_auth_user_for_vendor(vendor)
+            if auth_user:
+                auth_user.backend = 'django.contrib.auth.backends.ModelBackend'
+                django_login(request, auth_user)
+
+            request.session['vendor_logged_in'] = True
+            request.session['vendor_email'] = vendor.email
+            request.session['vendor_id'] = vendor.id
+            return vendor
+
+    messages.warning(request, 'Please login first.')
+    return None
 
 
 # ==================== PRODUCT VIEWS ====================
@@ -608,8 +730,16 @@ def vendor_reset_password(request):
         
         try:
             vendor = Vendor.objects.get(email=email, is_active=True)
-            vendor.password = make_password(new_password)
-            vendor.save()
+            password_hash = make_password(new_password)
+            vendor.password = password_hash
+            vendor.save(update_fields=['password', 'updated_at'])
+
+            # Keep Django auth user in sync.
+            auth_user, _ = _get_or_create_auth_user_for_vendor(vendor)
+            if auth_user:
+                auth_user.password = password_hash
+                auth_user.is_active = bool(vendor.is_active)
+                auth_user.save(update_fields=['password', 'is_active'])
             
             # Cleanup OTPs and session
             PasswordResetOTP.objects.filter(email=email, role='vendor').delete()

@@ -1,10 +1,15 @@
 from django.shortcuts import render
+from django.contrib.auth import logout as django_logout
 from django.db.models import Q
 from vendor.models import Product
 
 def landing_page(request):
     """Landing page with products - always public, logs out any user"""
-    # Clear user login session so landing page is always public
+    # Log out Django auth user and clear legacy session keys
+    try:
+        django_logout(request)
+    except Exception:
+        pass
     request.session.pop('user_logged_in', None)
     request.session.pop('user_email', None)
     request.session.pop('user_id', None)
@@ -36,7 +41,7 @@ def landing_page(request):
     cart = request.session.get('cart', {})
     context = {
         'products': all_products,
-        'is_user_logged_in': request.session.get('user_logged_in', False),
+        'is_user_logged_in': False,  # Always false — landing page logs out
         'cart_count': sum(item['quantity'] for item in cart.values()),
         'categories': Product.CATEGORY_CHOICES,
         'current_category': category_filter,
