@@ -3,7 +3,7 @@ Django==5.2.10
 djangorestframework==3.16.1
 gunicorn==25.1.0
 dj-database-url==2.3.0
-mysqlclient==2.2.7
+pymysql
 packaging==26.0
 pillow==12.1.0
 psycopg[binary]==3.2.13
